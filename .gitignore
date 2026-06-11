@@ -1,0 +1,10 @@
+# OS generated files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Node modules
+node_modules/
+
+# Local task/plan backups if any
+.gemini/

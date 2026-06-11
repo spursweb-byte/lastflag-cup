@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>GOLF Scoreboard - 独自イーブン大会</title>
+    <!-- Google Fonts: Outfit for numbers, Noto Sans JP for Japanese text -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&family=Outfit:wght@400;600;700;800&family=Shippori+Mincho:wght@500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style-v2.css?v=1.0.14">
+</head>
+<body>
+    <!-- App Container -->
+    <div id="app" class="app-container">
+        <!-- Splash Screen Animation Overlay -->
+        <div id="splash-screen" class="splash-screen">
+            <div class="splash-header-mock">
+                <img src="logo.jpg" class="splash-logo" alt="THE LAST FLAG">
+            </div>
+        </div>
+
+        <!-- Main Content Area -->
+        <main class="main-content">
+            <!-- 1. Portal Top Screen -->
+            <section id="page-home" class="page active portal-content-hidden">
+                <header class="portal-header">
+                    <div class="portal-logo-area">
+                        <img src="logo.jpg" class="portal-logo-img" alt="THE LAST FLAG">
+                    </div>
+                    <p class="portal-sub-slogan">最後の旗をつかむのは、ただ一人。</p>
+                    <p class="portal-tournament-date" id="display-tournament-date">2-Day Competition</p>
+                </header>
+
+                <div class="page-body portal-body">
+                    <!-- Main Portal Menu Cards -->
+                    <div class="portal-menu-grid">
+                        <!-- 1. Scoreboard (Redirects to Leaderboard) -->
+                        <button class="portal-menu-card btn-scoreboard" onclick="app.switchTab('leaderboard')">
+                            <div class="portal-card-content">
+                                <div class="portal-text-group">
+                                    <span class="portal-title">スコアボード</span>
+                                    <span class="portal-desc">順位表・スコアの確認と入力</span>
+                                </div>
+                            </div>
+                        </button>
+
+                        <!-- 2. Regulation -->
+                        <button class="portal-menu-card btn-regulation" onclick="app.switchTab('regulation')">
+                            <div class="portal-card-content">
+                                <div class="portal-text-group">
+                                    <span class="portal-title">レギュレーション</span>
+                                    <span class="portal-desc">大会ルールとイーブン値（ハンデ）</span>
+                                </div>
+                            </div>
+                        </button>
+
+                        <!-- 3. Settings -->
+                        <button class="portal-menu-card btn-settings" onclick="app.switchTab('settings')">
+                            <div class="portal-card-content">
+                                <div class="portal-text-group">
+                                    <span class="portal-title">大会設定</span>
+                                    <span class="portal-desc">選手名・ハンデ・Parの変更</span>
+                                </div>
+                            </div>
+                        </button>
+                    </div>
+
+                    <div class="portal-footer">
+                        <span>THE LAST FLAG by Golfico</span>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 2. Leaderboard Screen -->
+            <section id="page-leaderboard" class="page">
+                <header class="page-header">
+                    <div class="header-top-row">
+                        <button class="header-back-btn" onclick="app.goHome()">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
+                            ホーム
+                        </button>
+                        <h1 class="page-title">🏆 LEADERBOARD</h1>
+                    </div>
+                    <!-- Sub Navigation for Days -->
+                    <div class="segmented-control">
+                        <button class="control-btn active" id="btn-leaderboard-total" onclick="app.changeLeaderboardDay('total')">TOTAL</button>
+                        <button class="control-btn" id="btn-leaderboard-day1" onclick="app.changeLeaderboardDay('day1')">DAY 1</button>
+                        <button class="control-btn" id="btn-leaderboard-day2" onclick="app.changeLeaderboardDay('day2')">DAY 2</button>
+                    </div>
+                </header>
+
+                <div class="page-body">
+                    <!-- Detailed Leaderboard List -->
+                    <div class="leaderboard-list" id="detailed-leaderboard">
+                        <!-- JS dynamically generates content here -->
+                    </div>
+                </div>
+            </section>
+
+            <!-- 2.5 Regulation Screen -->
+            <section id="page-regulation" class="page">
+                <header class="page-header">
+                    <div class="header-top-row">
+                        <button class="header-back-btn" onclick="app.goHome()">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
+                            ホーム
+                        </button>
+                        <h1 class="page-title">💡 REGULATION</h1>
+                    </div>
+                </header>
+
+                <div class="page-body padding-bottom-large animate-fade-in">
+                    <!-- Rule Card 1 -->
+                    <div class="glass-card regulation-card">
+                        <h3 class="card-section-title">🏆 大会レギュレーション</h3>
+                        <p class="regulation-text">
+                            本大会は、2日間にわたって開催される4名によるゴルフコンペティションです。<br>
+                            プレイヤーごとの実力差を平準化し、全員に優勝のチャンスがあるよう<strong>「独自イーブン制度（ライブハンディキャップ方式）」</strong>を導入しています。
+                        </p>
+                    </div>
+
+                    <!-- Rule Card 2 -->
+                    <div class="glass-card regulation-card">
+                        <h3 class="card-section-title">🔢 独自イーブン制度（ハンデ）について</h3>
+                        <div class="rule-math-box">
+                            <span class="math-formula">ネット ＝ グロス − (設定イーブン値 × 消化ホール数 / 36)</span>
+                        </div>
+                        <p class="regulation-text">
+                            大会開始時の設定イーブン値（ハンデ値）は、競技進行状況（消化ホール数）に応じてリアルタイムに按分されます。<br>
+                            これにより、<strong>まだ全員が回り終えていないプレイ中であっても、常にフェアな暫定ネット順位</strong>がリーダーボードに反映されます。
+                        </p>
+                    </div>
+
+                    <!-- Rule Card 3: Current Players & Handicaps -->
+                    <div class="glass-card regulation-card">
+                        <h3 class="card-section-title">👥 参加者ハンデ（イーブン値）一覧</h3>
+                        <div class="regulation-table" id="regulation-players-list">
+                            <!-- JS dynamically generates player names and handicap list here -->
+                        </div>
+                    </div>
+
+                    <!-- Rule Card 4: Course Info -->
+                    <div class="glass-card regulation-card">
+                        <h3 class="card-section-title">⛳ コース設定（Par合計）</h3>
+                        <div class="regulation-course-info">
+                            <div class="course-summary-box">
+                                <span class="course-summary-val" id="regulation-total-par">72</span>
+                                <span class="course-summary-lbl">TOTAL PAR</span>
+                            </div>
+                            <div class="course-breakdown">
+                                <div>OUT: <span id="regulation-out-par">36</span></div>
+                                <div>IN: <span id="regulation-in-par">36</span></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 3. Score Input Screen -->
+            <section id="page-score" class="page">
+                <header class="page-header">
+                    <div class="header-top-row">
+                        <button class="header-back-btn" onclick="app.goHome()">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
+                            ホーム
+                        </button>
+                        <h1 class="page-title">📝 SCORE INPUT</h1>
+                    </div>
+                    <!-- Player Selector & Day Selector -->
+                    <div class="selectors-container">
+                        <div class="selector-row">
+                            <span class="selector-label">日程:</span>
+                            <div class="segmented-control mini">
+                                <button class="control-btn active" id="btn-score-day1" onclick="app.changeScoreDay(1)">Day 1</button>
+                                <button class="control-btn" id="btn-score-day2" onclick="app.changeScoreDay(2)">Day 2</button>
+                            </div>
+                        </div>
+                        <div class="selector-row player-select-row">
+                            <span class="selector-label">選手:</span>
+                            <div class="player-chips" id="player-selector-chips">
+                                <!-- JS dynamically generates player buttons here -->
+                            </div>
+                        </div>
+                    </div>
+                </header>
+
+                <div class="page-body padding-bottom-large">
+                    <!-- Score Input Card -->
+                    <div class="glass-card score-sheet-card">
+                        <!-- Out / In / Summary Navigation -->
+                        <div class="score-nav-tabs">
+                            <button class="score-tab active" id="tab-score-out" onclick="app.switchScoreHalf('out')">OUT (1-9)</button>
+                            <button class="score-tab" id="tab-score-in" onclick="app.switchScoreHalf('in')">IN (10-18)</button>
+                            <button class="score-tab" id="tab-score-summary" onclick="app.switchScoreHalf('summary')">集計</button>
+                        </div>
+
+                        <!-- 1-9 Holes Grid -->
+                        <div class="score-grid-container" id="grid-out">
+                            <div class="score-grid-header">
+                                <div class="grid-col-hole">Hole</div>
+                                <div class="grid-col-par">Par</div>
+                                <div class="grid-col-score">Score</div>
+                            </div>
+                            <div class="score-grid-rows" id="rows-out">
+                                <!-- JS dynamically generates rows for 1-9 -->
+                            </div>
+                        </div>
+
+                        <!-- 10-18 Holes Grid -->
+                        <div class="score-grid-container hidden" id="grid-in">
+                            <div class="score-grid-header">
+                                <div class="grid-col-hole">Hole</div>
+                                <div class="grid-col-par">Par</div>
+                                <div class="grid-col-score">Score</div>
+                            </div>
+                            <div class="score-grid-rows" id="rows-in">
+                                <!-- JS dynamically generates rows for 10-18 -->
+                            </div>
+                        </div>
+
+                        <!-- Score Summary View -->
+                        <div class="score-summary-container hidden" id="grid-summary">
+                            <!-- JS dynamically generates summary stats -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Custom Keypad Modal for scoring -->
+                <div class="keypad-modal-overlay" id="keypad-modal" onclick="app.closeKeypad(event)">
+                    <div class="keypad-modal" onclick="event.stopPropagation()">
+                        <div class="keypad-header">
+                            <div class="keypad-title">Hole <span id="keypad-hole-num">1</span> (Par <span id="keypad-hole-par">4</span>)</div>
+                            <div class="keypad-player-name" id="keypad-player-display">プレイヤー名</div>
+                        </div>
+                        <div class="keypad-display-row">
+                            <button class="keypad-adjust-btn" onclick="app.adjustKeypadScore(-1)">−</button>
+                            <div class="keypad-current-value" id="keypad-score-value">4</div>
+                            <button class="keypad-adjust-btn" onclick="app.adjustKeypadScore(1)">+</button>
+                        </div>
+                        <div class="keypad-grid">
+                            <button class="keypad-num-btn" onclick="app.setKeypadScore(1)">1</button>
+                            <button class="keypad-num-btn" onclick="app.setKeypadScore(2)">2</button>
+                            <button class="keypad-num-btn" onclick="app.setKeypadScore(3)">3</button>
+                            <button class="keypad-num-btn" onclick="app.setKeypadScore(4)">4</button>
+                            <button class="keypad-num-btn" onclick="app.setKeypadScore(5)">5</button>
+                            <button class="keypad-num-btn" onclick="app.setKeypadScore(6)">6</button>
+                            <button class="keypad-num-btn" onclick="app.setKeypadScore(7)">7</button>
+                            <button class="keypad-num-btn" onclick="app.setKeypadScore(8)">8</button>
+                            <button class="keypad-num-btn" onclick="app.setKeypadScore(9)">9</button>
+                            <button class="keypad-num-btn double-width" onclick="app.clearKeypadScore()">クリア (未入力)</button>
+                            <button class="keypad-num-btn" onclick="app.setKeypadScore(10)">10+</button>
+                        </div>
+                        <div class="keypad-footer">
+                            <button class="keypad-btn-cancel" onclick="app.closeKeypad(null)">キャンセル</button>
+                            <button class="keypad-btn-confirm" onclick="app.confirmKeypadScore()">確定</button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 4. Settings Screen -->
+            <section id="page-settings" class="page">
+                <header class="page-header">
+                    <div class="header-top-row">
+                        <button class="header-back-btn" onclick="app.goHome()">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
+                            ホーム
+                        </button>
+                        <h1 class="page-title">⚙️ SETTINGS</h1>
+                    </div>
+                </header>
+
+                <div class="page-body padding-bottom-large">
+                    <!-- Tournament Config Card -->
+                    <div class="glass-card settings-card">
+                        <h3 class="card-section-title">🏆 大会基本設定</h3>
+                        <div class="input-group">
+                            <label for="input-tournament-name" class="input-label">大会名</label>
+                            <input type="text" id="input-tournament-name" class="text-input" placeholder="ゴルフコンペ">
+                        </div>
+                        <div class="input-group">
+                            <label for="input-tournament-date" class="input-label">開催日</label>
+                            <input type="text" id="input-tournament-date" class="text-input" placeholder="2026/6/11 - 6/12">
+                        </div>
+                        <button class="solid-btn" onclick="app.saveTournamentInfo()">大会情報を保存</button>
+                    </div>
+
+                    <!-- Players & Even Value (Handicap) Settings -->
+                    <div class="glass-card settings-card">
+                        <h3 class="card-section-title">👥 選手設定 & イーブン値 (ハンデ)</h3>
+                        <div class="players-settings-list" id="players-settings-list">
+                            <!-- JS dynamically generates player input rows here -->
+                        </div>
+                        <button class="solid-btn" onclick="app.savePlayersSettings()">選手・ハンデ情報を保存</button>
+                    </div>
+
+                    <!-- Course Par Settings -->
+                    <div class="glass-card settings-card">
+                        <h3 class="card-section-title">⛳ 基準打数 (Par) 設定</h3>
+                        <p class="settings-desc">各ホールの規定打数を設定できます（デフォルトは計72）。</p>
+                        <div class="par-edit-container">
+                            <div class="par-edit-section">
+                                <h4 class="par-edit-title">OUT (1-9)</h4>
+                                <div class="par-edit-grid" id="par-edit-out">
+                                    <!-- Dynamic elements -->
+                                </div>
+                            </div>
+                            <div class="par-edit-section">
+                                <h4 class="par-edit-title">IN (10-18)</h4>
+                                <div class="par-edit-grid" id="par-edit-in">
+                                    <!-- Dynamic elements -->
+                                </div>
+                            </div>
+                        </div>
+                        <button class="solid-btn" onclick="app.saveParSettings()">Par設定を保存</button>
+                    </div>
+
+                    <!-- Data Management Card -->
+                    <div class="glass-card settings-card danger-zone">
+                        <h3 class="card-section-title text-danger">⚠️ データ管理</h3>
+                        <div class="data-actions">
+                            <button class="outline-btn" onclick="app.exportData()">JSONでデータをエクスポート</button>
+                            <button class="outline-btn" onclick="document.getElementById('import-file-input').click()">データをインポート</button>
+                            <input type="file" id="import-file-input" class="hidden" accept=".json" onchange="app.importData(event)">
+                            <button class="danger-btn" onclick="app.resetAllData()">全データをリセット</button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <!-- Bottom Tab Bar Navigation -->
+        <nav class="tab-bar">
+            <button class="tab-item active" id="tab-home" onclick="app.switchTab('home')">
+                <svg class="tab-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+                <span class="tab-label">ホーム</span>
+            </button>
+            <button class="tab-item" id="tab-leaderboard" onclick="app.switchTab('leaderboard')">
+                <svg class="tab-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="7"></circle><polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"></polyline></svg>
+                <span class="tab-label">リーダーボード</span>
+            </button>
+            <button class="tab-item" id="tab-score" onclick="app.switchTab('score')">
+                <svg class="tab-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg>
+                <span class="tab-label">スコア入力</span>
+            </button>
+            <button class="tab-item" id="tab-settings" onclick="app.switchTab('settings')">
+                <svg class="tab-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+                <span class="tab-label">設定</span>
+            </button>
+        </nav>
+    </div>
+
+    <!-- Alert / Toast Notifications -->
+    <div id="toast-container" class="toast-container"></div>
+
+    <script src="app-v2.js?v=1.0.14"></script>
+</body>
+</html>
