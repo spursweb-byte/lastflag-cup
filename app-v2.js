@@ -386,32 +386,47 @@ class GolfApp {
     // NAVIGATION
     switchTab(tabId) {
         this.currentTab = tabId;
+        const mainContent = document.querySelector('.main-content');
         
-        // Update DOM active classes for pages
-        document.querySelectorAll('.page').forEach(page => {
-            page.classList.remove('active');
-        });
-        document.getElementById(`page-${tabId}`).classList.add('active');
-        
-        // Bottom tab items active class
-        document.querySelectorAll('.tab-item').forEach(item => {
-            item.classList.remove('active');
-        });
-        const activeTabBtn = document.getElementById(`tab-${tabId}`);
-        if (activeTabBtn) {
-            activeTabBtn.classList.add('active');
+        if (mainContent) {
+            mainContent.classList.remove('scan-running');
+            void mainContent.offsetWidth; // Trigger reflow to restart animation
+            mainContent.classList.add('scan-running');
+            
+            // Remove class after the scan line animation completes
+            setTimeout(() => {
+                mainContent.classList.remove('scan-running');
+            }, 550);
         }
         
-        // Show/Hide bottom navigation bar based on active page
-        const tabBar = document.querySelector('.tab-bar');
-        if (tabId === 'home' || tabId === 'regulation') {
-            tabBar.classList.add('tab-bar-hidden');
-        } else {
-            tabBar.classList.remove('tab-bar-hidden');
-        }
-        
-        // Trigger tab-specific renders
-        this.renderActiveTab();
+        // Slightly delay actual UI render to match the neon scan light beam passing the center
+        setTimeout(() => {
+            // Update DOM active classes for pages
+            document.querySelectorAll('.page').forEach(page => {
+                page.classList.remove('active');
+            });
+            document.getElementById(`page-${tabId}`).classList.add('active');
+            
+            // Bottom tab items active class
+            document.querySelectorAll('.tab-item').forEach(item => {
+                item.classList.remove('active');
+            });
+            const activeTabBtn = document.getElementById(`tab-${tabId}`);
+            if (activeTabBtn) {
+                activeTabBtn.classList.add('active');
+            }
+            
+            // Show/Hide bottom navigation bar based on active page
+            const tabBar = document.querySelector('.tab-bar');
+            if (tabId === 'home' || tabId === 'regulation') {
+                tabBar.classList.add('tab-bar-hidden');
+            } else {
+                tabBar.classList.remove('tab-bar-hidden');
+            }
+            
+            // Trigger tab-specific renders
+            this.renderActiveTab();
+        }, 150);
     }
 
     goHome() {
@@ -685,7 +700,7 @@ class GolfApp {
             </div>
             <div class="hole-par-val">Par ${parVal}</div>
             <div class="score-input-trigger">
-                <button class="score-cell-btn ${scoreClass}" onclick="app.openKeypad(${this.scoreActivePlayerId}, ${this.scoreActiveDay}, ${holeIdx}, ${score})">
+                <button id="score-btn-${holeIdx}" class="score-cell-btn ${scoreClass}" onclick="app.openKeypad(${this.scoreActivePlayerId}, ${this.scoreActiveDay}, ${holeIdx}, ${score})">
                     ${scoreText}
                 </button>
             </div>
@@ -837,7 +852,24 @@ class GolfApp {
         this.saveState();
         
         this.closeKeypad(null);
+        
+        const wasOutHole = holeIndex < 9;
+        const isCurrentOutTab = this.scoreActiveHalf === 'out';
+        const isCurrentInTab = this.scoreActiveHalf === 'in';
+        
         this.renderScoreInput();
+        
+        // If the modified hole is currently rendered on screen, trigger bounce pop animation
+        if ((wasOutHole && isCurrentOutTab) || (!wasOutHole && isCurrentInTab)) {
+            const btn = document.getElementById(`score-btn-${holeIndex}`);
+            if (btn) {
+                btn.classList.add('cell-pop-active');
+                setTimeout(() => {
+                    btn.classList.remove('cell-pop-active');
+                }, 400);
+            }
+        }
+        
         this.showToast(`Hole ${holeIndex + 1} のスコアを更新しました`);
     }
 
