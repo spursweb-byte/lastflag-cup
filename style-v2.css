@@ -1700,35 +1700,45 @@ button:active {
     0% {
         opacity: 0;
         transform: translateY(calc(50vh - 95px)) scale(1.33);
+        -webkit-filter: hue-rotate(0deg) brightness(1) drop-shadow(0 0 0 rgba(0,0,0,0));
         filter: hue-rotate(0deg) brightness(1) drop-shadow(0 0 0 rgba(0,0,0,0));
     }
     12% {
         opacity: 1;
         transform: translateY(calc(50vh - 95px)) scale(1.33);
+        -webkit-filter: hue-rotate(0deg) brightness(1) drop-shadow(0 0 0 rgba(0,0,0,0));
         filter: hue-rotate(0deg) brightness(1) drop-shadow(0 0 0 rgba(0,0,0,0));
     }
     /* 12% - 50%: Staggered Color Cycle (hue rotation) */
     25% {
         transform: translateY(calc(50vh - 95px)) scale(1.33);
+        -webkit-filter: hue-rotate(120deg) brightness(1) drop-shadow(0 0 0 rgba(0,0,0,0));
         filter: hue-rotate(120deg) brightness(1) drop-shadow(0 0 0 rgba(0,0,0,0));
     }
     38% {
         transform: translateY(calc(50vh - 95px)) scale(1.33);
+        -webkit-filter: hue-rotate(240deg) brightness(1) drop-shadow(0 0 0 rgba(0,0,0,0));
         filter: hue-rotate(240deg) brightness(1) drop-shadow(0 0 0 rgba(0,0,0,0));
     }
     50% {
         transform: translateY(calc(50vh - 95px)) scale(1.33);
+        -webkit-filter: hue-rotate(360deg) brightness(1) drop-shadow(0 0 0 rgba(0,0,0,0));
         filter: hue-rotate(360deg) brightness(1) drop-shadow(0 0 0 rgba(0,0,0,0));
     }
     /* 55%: Return completely to original blue and start growing */
     55% {
         transform: translateY(calc(50vh - 95px)) scale(1.33);
+        -webkit-filter: hue-rotate(360deg) brightness(1) drop-shadow(0 0 0 rgba(0,0,0,0));
         filter: hue-rotate(360deg) brightness(1) drop-shadow(0 0 0 rgba(0,0,0,0));
         opacity: 1;
     }
     /* 70% - 73%: Grow huge (ズームイン) and intense white-cyan neon flash */
     70% {
-        transform: translateY(calc(50vh - 99px)) scale(2.4); /* グーッと大きくなって */
+        transform: translateY(calc(50vh - 99px)) scale(2.4);
+        -webkit-filter: hue-rotate(360deg) brightness(5.5) 
+                        drop-shadow(0 0 45px rgba(255, 255, 255, 1)) 
+                        drop-shadow(0 0 25px rgba(0, 230, 118, 0.85))
+                        drop-shadow(0 0 10px rgba(255, 255, 255, 0.9));
         filter: hue-rotate(360deg) brightness(5.5) 
                 drop-shadow(0 0 45px rgba(255, 255, 255, 1)) 
                 drop-shadow(0 0 25px rgba(0, 230, 118, 0.85))
@@ -1737,6 +1747,10 @@ button:active {
     }
     73% {
         transform: translateY(calc(50vh - 99px)) scale(2.45);
+        -webkit-filter: hue-rotate(360deg) brightness(6.0) 
+                        drop-shadow(0 0 50px rgba(255, 255, 255, 1)) 
+                        drop-shadow(0 0 30px rgba(0, 230, 118, 0.9))
+                        drop-shadow(0 0 15px rgba(255, 255, 255, 0.95));
         filter: hue-rotate(360deg) brightness(6.0) 
                 drop-shadow(0 0 50px rgba(255, 255, 255, 1)) 
                 drop-shadow(0 0 30px rgba(0, 230, 118, 0.9))
@@ -1746,7 +1760,8 @@ button:active {
     /* 73% - 100%: Smoothly shrink down and move into the header position */
     100% {
         opacity: 0;
-        transform: translateY(0) scale(1); /* スーッと小さくなって収まる */
+        transform: translateY(0) scale(1);
+        -webkit-filter: hue-rotate(360deg) brightness(1) drop-shadow(0 0 0 rgba(0,0,0,0));
         filter: hue-rotate(360deg) brightness(1) drop-shadow(0 0 0 rgba(0,0,0,0));
     }
 }
@@ -1756,20 +1771,24 @@ button:active {
     0% {
         opacity: 0;
         transform: scale(0.95) translateY(15px);
+        -webkit-filter: drop-shadow(0 0 0 rgba(0,0,0,0));
         filter: drop-shadow(0 0 0 rgba(0,0,0,0));
     }
     60% {
         opacity: 1;
         transform: scale(1.06) translateY(-3px);
+        -webkit-filter: drop-shadow(0 0 15px rgba(0, 230, 118, 0.45)) drop-shadow(0 4px 10px rgba(0, 0, 0, 0.25));
         filter: drop-shadow(0 0 15px rgba(0, 230, 118, 0.45)) drop-shadow(0 4px 10px rgba(0, 0, 0, 0.25));
     }
     80% {
         transform: scale(0.98) translateY(1px);
+        -webkit-filter: drop-shadow(0 0 4px rgba(0, 150, 255, 0.15));
         filter: drop-shadow(0 0 4px rgba(0, 150, 255, 0.15));
     }
     100% {
         opacity: 1;
         transform: scale(1) translateY(0);
+        -webkit-filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.15)) drop-shadow(0 0 6px rgba(0, 150, 255, 0.25));
         filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.15)) drop-shadow(0 0 6px rgba(0, 150, 255, 0.25));
     }
 }
@@ -1777,9 +1796,11 @@ button:active {
 /* Subtle continuous pulse neon glow to keep it looking premium */
 @keyframes logoNeonGlow {
     0% {
+        -webkit-filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.15)) drop-shadow(0 0 6px rgba(0, 150, 255, 0.22));
         filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.15)) drop-shadow(0 0 6px rgba(0, 150, 255, 0.22));
     }
     100% {
+        -webkit-filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.25)) drop-shadow(0 0 12px rgba(0, 150, 255, 0.45)) drop-shadow(0 0 2px rgba(0, 230, 118, 0.22));
         filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.25)) drop-shadow(0 0 12px rgba(0, 150, 255, 0.45)) drop-shadow(0 0 2px rgba(0, 230, 118, 0.22));
     }
 }
