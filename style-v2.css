@@ -1724,7 +1724,7 @@ button:active, .portal-menu-card:active, .player-chip:active, .score-cell-btn:ac
 /* Splash Shockwave Ring */
 .splash-ring {
     position: absolute;
-    top: calc(50vh - 95px + 25px); /* Center near the logo position */
+    top: 50%;
     left: 50%;
     transform: translate(-50%, -50%) scale(0.1);
     width: 150px;
@@ -1890,35 +1890,35 @@ button:active, .portal-menu-card:active, .player-chip:active, .score-cell-btn:ac
 @keyframes logoIntroMove {
     0% {
         opacity: 0;
-        transform: translateY(calc(50vh - 95px)) scale(1.33);
+        transform: translateY(calc(50vh - 140px)) scale(1.33);
         -webkit-filter: brightness(1) drop-shadow(0 0 0 rgba(0,0,0,0));
         filter: brightness(1) drop-shadow(0 0 0 rgba(0,0,0,0));
     }
     12% {
         opacity: 1;
-        transform: translateY(calc(50vh - 95px)) scale(1.33);
+        transform: translateY(calc(50vh - 140px)) scale(1.33);
         -webkit-filter: brightness(1) drop-shadow(0 0 0 rgba(0,0,0,0));
         filter: brightness(1) drop-shadow(0 0 0 rgba(0,0,0,0));
     }
     /* 12% - 50%: Subtle breathing pulse in original cyan */
     25% {
-        transform: translateY(calc(50vh - 95px)) scale(1.38);
+        transform: translateY(calc(50vh - 140px)) scale(1.38);
         -webkit-filter: brightness(1.05) drop-shadow(0 0 8px rgba(0, 210, 255, 0.25));
         filter: brightness(1.05) drop-shadow(0 0 8px rgba(0, 210, 255, 0.25));
     }
     38% {
-        transform: translateY(calc(50vh - 95px)) scale(1.33);
+        transform: translateY(calc(50vh - 140px)) scale(1.33);
         -webkit-filter: brightness(1) drop-shadow(0 0 0 rgba(0,0,0,0));
         filter: brightness(1) drop-shadow(0 0 0 rgba(0,0,0,0));
     }
     50% {
-        transform: translateY(calc(50vh - 95px)) scale(1.38);
+        transform: translateY(calc(50vh - 140px)) scale(1.38);
         -webkit-filter: brightness(1.05) drop-shadow(0 0 8px rgba(0, 210, 255, 0.25));
         filter: brightness(1.05) drop-shadow(0 0 8px rgba(0, 210, 255, 0.25));
     }
     /* 53% - 63%: Rapid zoom-in and dramatic cyan/white neon flash */
     60% {
-        transform: translateY(calc(50vh - 99px)) scale(2.65); /* Massive zoom-in */
+        transform: translateY(calc(50vh - 140px)) scale(2.65); /* Massive zoom-in */
         -webkit-filter: brightness(6.5) 
                         drop-shadow(0 0 55px rgba(255, 255, 255, 1)) 
                         drop-shadow(0 0 35px rgba(0, 210, 255, 0.95))
@@ -1930,7 +1930,7 @@ button:active, .portal-menu-card:active, .player-chip:active, .score-cell-btn:ac
         opacity: 1;
     }
     63% {
-        transform: translateY(calc(50vh - 99px)) scale(2.7); /* Peak size & intense white glare */
+        transform: translateY(calc(50vh - 140px)) scale(2.7); /* Peak size & intense white glare */
         -webkit-filter: brightness(7.0) 
                         drop-shadow(0 0 65px rgba(255, 255, 255, 1)) 
                         drop-shadow(0 0 40px rgba(0, 210, 255, 0.98))
@@ -1943,13 +1943,13 @@ button:active, .portal-menu-card:active, .player-chip:active, .score-cell-btn:ac
     }
     /* 63% - 73%: Return to base scale, holding briefly */
     73% {
-        transform: translateY(calc(50vh - 95px)) scale(1.33);
+        transform: translateY(calc(50vh - 140px)) scale(1.33);
         -webkit-filter: brightness(1) drop-shadow(0 0 0 rgba(0,0,0,0));
         filter: brightness(1) drop-shadow(0 0 0 rgba(0,0,0,0));
         opacity: 1;
     }
     80% {
-        transform: translateY(calc(50vh - 95px)) scale(1.33);
+        transform: translateY(calc(50vh - 140px)) scale(1.33);
         -webkit-filter: brightness(1) drop-shadow(0 0 0 rgba(0,0,0,0));
         filter: brightness(1) drop-shadow(0 0 0 rgba(0,0,0,0));
         opacity: 1;
