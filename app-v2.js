@@ -26,6 +26,7 @@ class GolfApp {
         };
 
         this.state = null;
+        this.isInitialLoad = true;
         
         // Active UI States
         this.currentTab = 'home';
@@ -387,7 +388,7 @@ class GolfApp {
     switchTab(tabId) {
         this.currentTab = tabId;
         
-        this.triggerSplashTransition(() => {
+        const performSwitch = () => {
             // Update DOM active classes for pages
             document.querySelectorAll('.page').forEach(page => {
                 page.classList.remove('active');
@@ -413,7 +414,14 @@ class GolfApp {
             
             // Trigger tab-specific renders
             this.renderActiveTab();
-        });
+        };
+
+        if (this.isInitialLoad) {
+            performSwitch();
+            this.isInitialLoad = false;
+        } else {
+            this.triggerSplashTransition(performSwitch);
+        }
     }
 
     triggerSplashTransition(callback) {
@@ -477,6 +485,7 @@ class GolfApp {
         }
         
         let phase = 'grow'; // 'grow' -> 'full' -> 'shrink'
+        let progress = 0; // Declare the missing progress variable
         let currentFrame = 0;
         let frameId;
         let switched = false;
