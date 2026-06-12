@@ -885,7 +885,7 @@ class GolfApp {
         row.className = 'score-grid-row';
         
         let scoreClass = 'empty';
-        let scoreText = '入力';
+        let scoreText = '−';
         
         if (score !== null && score > 0) {
             scoreText = score.toString();
@@ -902,12 +902,14 @@ class GolfApp {
         row.innerHTML = `
             <div class="grid-col-hole">
                 <span class="hole-num">Hole ${holeNum}</span>
+                <span class="hole-par-badge">Par ${parVal}</span>
             </div>
-            <div class="hole-par-val">Par ${parVal}</div>
-            <div class="score-input-trigger">
-                <button id="score-btn-${holeIdx}" class="score-cell-btn ${scoreClass}" onclick="app.openKeypad(${this.scoreActivePlayerId}, ${this.scoreActiveDay}, ${holeIdx}, ${score})">
+            <div class="score-inplace-control">
+                <button class="score-adjust-btn btn-minus" onclick="app.adjustScoreInplace(${holeIdx}, -1)">−</button>
+                <div id="score-display-${holeIdx}" class="score-value-display ${scoreClass}">
                     ${scoreText}
-                </button>
+                </div>
+                <button class="score-adjust-btn btn-plus" onclick="app.adjustScoreInplace(${holeIdx}, 1)">+</button>
             </div>
         `;
         return row;
@@ -986,96 +988,50 @@ class GolfApp {
         `;
     }
 
-    // KEYPAD MODAL
-    openKeypad(playerId, day, holeIdx, currentScore) {
-        const player = this.state.players.find(p => p.id === playerId);
-        const par = this.state.pars[holeIdx];
-        
-        this.keypadState = {
-            playerId,
-            day,
-            holeIndex: holeIdx,
-            currentValue: currentScore !== null ? currentScore : par // Default to Par if empty
-        };
-        
-        document.getElementById('keypad-hole-num').innerText = holeIdx + 1;
-        document.getElementById('keypad-hole-par').innerText = par;
-        document.getElementById('keypad-player-display').innerText = player.name;
-        
-        this.updateKeypadDisplay();
-        
-        document.getElementById('keypad-modal').classList.add('open');
-    }
-
-    updateKeypadDisplay() {
-        const display = document.getElementById('keypad-score-value');
-        if (this.keypadState.currentValue === null || this.keypadState.currentValue <= 0) {
-            display.innerText = '未入力';
-            display.classList.add('empty');
-        } else {
-            display.innerText = this.keypadState.currentValue;
-            display.classList.remove('empty');
-        }
-    }
-
-    adjustKeypadScore(delta) {
-        if (this.keypadState.currentValue === null) {
-            this.keypadState.currentValue = this.state.pars[this.keypadState.holeIndex];
-        } else {
-            this.keypadState.currentValue = Math.max(1, this.keypadState.currentValue + delta);
-        }
-        this.updateKeypadDisplay();
-    }
-
-    setKeypadScore(val) {
-        this.keypadState.currentValue = val;
-        this.updateKeypadDisplay();
-    }
-
-    clearKeypadScore() {
-        this.keypadState.currentValue = null;
-        this.updateKeypadDisplay();
-    }
-
-    closeKeypad(event) {
-        // Can be called with event or null
-        if (event && event.target !== document.getElementById('keypad-modal')) {
-            return;
-        }
-        document.getElementById('keypad-modal').classList.remove('open');
-    }
-
-    confirmKeypadScore() {
-        const { playerId, day, holeIndex, currentValue } = this.keypadState;
-        const dayKey = `day${day}`;
+    // INPLACE SCORE ADJUSTMENT (DIRECT ADJUSTMENT WITH PLUS / MINUS)
+    adjustScoreInplace(holeIdx, delta) {
+        const playerId = this.scoreActivePlayerId;
+        const dayKey = `day${this.scoreActiveDay}`;
         
         if (!this.state.scores[playerId]) {
             this.state.scores[playerId] = { day1: Array(18).fill(null), day2: Array(18).fill(null) };
         }
         
-        this.state.scores[playerId][dayKey][holeIndex] = currentValue;
-        this.saveState();
+        let currentValue = this.state.scores[playerId][dayKey][holeIdx];
+        const parVal = this.state.pars[holeIdx];
         
-        this.closeKeypad(null);
-        
-        const wasOutHole = holeIndex < 9;
-        const isCurrentOutTab = this.scoreActiveHalf === 'out';
-        const isCurrentInTab = this.scoreActiveHalf === 'in';
-        
-        this.renderScoreInput();
-        
-        // If the modified hole is currently rendered on screen, trigger bounce pop animation
-        if ((wasOutHole && isCurrentOutTab) || (!wasOutHole && isCurrentInTab)) {
-            const btn = document.getElementById(`score-btn-${holeIndex}`);
-            if (btn) {
-                btn.classList.add('cell-pop-active');
-                setTimeout(() => {
-                    btn.classList.remove('cell-pop-active');
-                }, 400);
+        if (currentValue === null || currentValue <= 0) {
+            // If empty, pressing + or - sets it to Par first
+            currentValue = parVal;
+        } else {
+            const newValue = currentValue + delta;
+            if (newValue < 1) {
+                // If adjusted below 1, clear to empty (null)
+                currentValue = null;
+            } else {
+                currentValue = Math.max(1, Math.min(15, newValue));
             }
         }
         
-        this.showToast(`Hole ${holeIndex + 1} のスコアを更新しました`);
+        this.state.scores[playerId][dayKey][holeIdx] = currentValue;
+        this.saveState();
+        
+        // Re-render score input grid
+        this.renderScoreInput();
+        
+        // Trigger bounce pop animation for the updated cell display
+        const displayElem = document.getElementById(`score-display-${holeIdx}`);
+        if (displayElem) {
+            displayElem.classList.add('cell-pop-active');
+            setTimeout(() => {
+                displayElem.classList.remove('cell-pop-active');
+            }, 350);
+        }
+        
+        this.showToast(currentValue === null 
+            ? `Hole ${holeIdx + 1} のスコアをクリアしました` 
+            : `Hole ${holeIdx + 1} のスコアを ${currentValue} に更新しました`
+        );
     }
 
     // SETTINGS SCREEN

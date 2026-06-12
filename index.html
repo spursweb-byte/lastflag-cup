@@ -8,7 +8,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700;900&family=Outfit:wght@400;600;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="style-v2.css?v=1.0.18">
+    <link rel="stylesheet" href="style-v2.css?v=1.0.19">
 </head>
 <body>
     <!-- App Container -->
@@ -229,38 +229,6 @@
                         </div>
                     </div>
                 </div>
-
-                <!-- Custom Keypad Modal for scoring -->
-                <div class="keypad-modal-overlay" id="keypad-modal" onclick="app.closeKeypad(event)">
-                    <div class="keypad-modal" onclick="event.stopPropagation()">
-                        <div class="keypad-header">
-                            <div class="keypad-title">Hole <span id="keypad-hole-num">1</span> (Par <span id="keypad-hole-par">4</span>)</div>
-                            <div class="keypad-player-name" id="keypad-player-display">プレイヤー名</div>
-                        </div>
-                        <div class="keypad-display-row">
-                            <button class="keypad-adjust-btn" onclick="app.adjustKeypadScore(-1)">−</button>
-                            <div class="keypad-current-value" id="keypad-score-value">4</div>
-                            <button class="keypad-adjust-btn" onclick="app.adjustKeypadScore(1)">+</button>
-                        </div>
-                        <div class="keypad-grid">
-                            <button class="keypad-num-btn" onclick="app.setKeypadScore(1)">1</button>
-                            <button class="keypad-num-btn" onclick="app.setKeypadScore(2)">2</button>
-                            <button class="keypad-num-btn" onclick="app.setKeypadScore(3)">3</button>
-                            <button class="keypad-num-btn" onclick="app.setKeypadScore(4)">4</button>
-                            <button class="keypad-num-btn" onclick="app.setKeypadScore(5)">5</button>
-                            <button class="keypad-num-btn" onclick="app.setKeypadScore(6)">6</button>
-                            <button class="keypad-num-btn" onclick="app.setKeypadScore(7)">7</button>
-                            <button class="keypad-num-btn" onclick="app.setKeypadScore(8)">8</button>
-                            <button class="keypad-num-btn" onclick="app.setKeypadScore(9)">9</button>
-                            <button class="keypad-num-btn double-width" onclick="app.clearKeypadScore()">クリア (未入力)</button>
-                            <button class="keypad-num-btn" onclick="app.setKeypadScore(10)">10+</button>
-                        </div>
-                        <div class="keypad-footer">
-                            <button class="keypad-btn-cancel" onclick="app.closeKeypad(null)">キャンセル</button>
-                            <button class="keypad-btn-confirm" onclick="app.confirmKeypadScore()">確定</button>
-                        </div>
-                    </div>
-                </div>
             </section>
 
             <!-- 4. Settings Screen -->
@@ -358,6 +326,6 @@
     <!-- Alert / Toast Notifications -->
     <div id="toast-container" class="toast-container"></div>
 
-    <script src="app-v2.js?v=1.0.18"></script>
+    <script src="app-v2.js?v=1.0.19"></script>
 </body>
 </html>
