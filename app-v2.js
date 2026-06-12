@@ -633,9 +633,6 @@ class GolfApp {
         
         frameId = requestAnimationFrame(animate);
     }
-        
-        frameId = requestAnimationFrame(animate);
-    }
 
     goHome() {
         this.switchTab('home');
