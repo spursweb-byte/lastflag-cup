@@ -1064,14 +1064,17 @@ button:active {
     font-weight: 700;
 }
 
-.player-name-input {
-    flex: 2;
-    padding: 8px 10px;
-    font-size: 0.85rem;
-    border-radius: 8px;
-    background: rgba(0, 0, 0, 0.25);
-    border: 1px solid var(--card-border);
-    color: #fff;
+.player-name-label {
+    flex: 1.5;
+    font-weight: 700;
+    color: var(--text-primary);
+    font-size: 0.92rem;
+}
+
+.player-even-inputs-container {
+    flex: 2.2;
+    display: flex;
+    gap: 6px;
 }
 
 .player-even-input-group {

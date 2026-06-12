@@ -11,10 +11,10 @@ class GolfApp {
                 date: "2026/07/10 - 07/11"
             },
             players: [
-                { id: 1, name: "プレイヤーA", handicap: 10 },
-                { id: 2, name: "プレイヤーB", handicap: 15 },
-                { id: 3, name: "プレイヤーC", handicap: 5 },
-                { id: 4, name: "プレイヤーD", handicap: 0 }
+                { id: 1, name: "田安プロ", handicapDay1: 0, handicapDay2: 0 },
+                { id: 2, name: "黒岩プロ", handicapDay1: 0, handicapDay2: 0 },
+                { id: 3, name: "渡辺プロ", handicapDay1: 0, handicapDay2: 0 },
+                { id: 4, name: "ジャンボ慎太アマ", handicapDay1: 0, handicapDay2: 0 }
             ],
             pars: [4, 4, 3, 4, 5, 4, 3, 4, 5,  4, 3, 4, 4, 5, 3, 4, 4, 5], // 18 holes par (Out: 36, In: 36)
             scores: {
@@ -196,6 +196,51 @@ class GolfApp {
                     this.state.tournament.date = "2026/07/10 - 07/11";
                     this.saveState();
                 }
+
+                // Migrate players and handicaps to D1/D2 style
+                let migrated = false;
+                const fixedNames = {
+                    1: "田安プロ",
+                    2: "黒岩プロ",
+                    3: "渡辺プロ",
+                    4: "ジャンボ慎太アマ"
+                };
+
+                if (this.state.players) {
+                    this.state.players = this.state.players.map(p => {
+                        const newName = fixedNames[p.id];
+                        let updated = false;
+                        
+                        if (newName && p.name !== newName) {
+                            p.name = newName;
+                            updated = true;
+                        }
+                        
+                        if (p.handicapDay1 === undefined) {
+                            p.handicapDay1 = p.handicap !== undefined ? p.handicap : 0;
+                            updated = true;
+                        }
+                        if (p.handicapDay2 === undefined) {
+                            p.handicapDay2 = p.handicap !== undefined ? p.handicap : 0;
+                            updated = true;
+                        }
+                        
+                        if (p.handicap !== undefined) {
+                            delete p.handicap;
+                            updated = true;
+                        }
+                        
+                        if (updated) migrated = true;
+                        return p;
+                    });
+                } else {
+                    this.state.players = JSON.parse(JSON.stringify(this.defaultState.players));
+                    migrated = true;
+                }
+
+                if (migrated) {
+                    this.saveState();
+                }
             } else {
                 this.state = JSON.parse(JSON.stringify(this.defaultState));
                 this.saveState();
@@ -293,35 +338,54 @@ class GolfApp {
         const player = this.state.players.find(p => p.id === playerId);
         if (!player) return null;
 
-        const handicap = player.handicap || 0;
+        // If dayNum is null (TOTAL), combine stats of Day 1 and Day 2
+        if (dayNum === null) {
+            const day1Stats = this.getPlayerStats(playerId, 1);
+            const day2Stats = this.getPlayerStats(playerId, 2);
+            
+            return {
+                player,
+                playedHoles: day1Stats.playedHoles + day2Stats.playedHoles,
+                totalGross: day1Stats.totalGross + day2Stats.totalGross,
+                totalPar: day1Stats.totalPar + day2Stats.totalPar,
+                grossDiff: day1Stats.grossDiff + day2Stats.grossDiff,
+                netDiff: day1Stats.netDiff + day2Stats.netDiff,
+                netScore: day1Stats.netScore + day2Stats.netScore,
+                liveHandicap: parseFloat((day1Stats.liveHandicap + day2Stats.liveHandicap).toFixed(1)),
+                outGross: day1Stats.outGross + day2Stats.outGross,
+                inGross: day1Stats.inGross + day2Stats.inGross,
+                outPar: day1Stats.outPar + day2Stats.outPar,
+                inPar: day1Stats.inPar + day2Stats.inPar,
+                isFinished: day1Stats.isFinished && day2Stats.isFinished
+            };
+        }
+
+        // Single Day Calculation
+        const handicap = dayNum === 1 
+            ? (player.handicapDay1 ?? 0) 
+            : (player.handicapDay2 ?? 0);
         
         let playedHoles = 0;
         let totalGross = 0;
         let totalPar = 0;
         
-        const daysToProcess = dayNum ? [dayNum] : [1, 2];
+        const dayKey = `day${dayNum}`;
+        const dayScores = this.state.scores[playerId]?.[dayKey] || Array(18).fill(null);
         
-        daysToProcess.forEach(d => {
-            const dayKey = `day${d}`;
-            const dayScores = this.state.scores[playerId]?.[dayKey] || Array(18).fill(null);
-            
-            dayScores.forEach((score, idx) => {
-                if (score !== null && score > 0) {
-                    playedHoles++;
-                    totalGross += score;
-                    totalPar += this.state.pars[idx];
-                }
-            });
+        dayScores.forEach((score, idx) => {
+            if (score !== null && score > 0) {
+                playedHoles++;
+                totalGross += score;
+                totalPar += this.state.pars[idx];
+            }
         });
 
-        // Live Handicap Calculation:按分ハンデ (イーブン値 * 消化ホール数 / 大会総ホール数(36))
-        // 1日のみの計算（dayNum指定時）なら、総ホール数は18として按分する
-        const maxHoles = dayNum ? 18 : 36;
-        const liveHandicap = playedHoles > 0 ? (handicap * (playedHoles / maxHoles)) : 0;
+        // Day specific live handicap (max 18 holes)
+        const liveHandicap = playedHoles > 0 ? (handicap * (playedHoles / 18)) : 0;
         
-        const grossDiff = totalGross - totalPar; // Parに対する差 (グロス)
-        const netDiff = grossDiff - liveHandicap; // Parに対する差 (ネット)
-        const netScore = totalGross - liveHandicap; // ネットスコア実値
+        const grossDiff = totalGross - totalPar;
+        const netDiff = grossDiff - liveHandicap;
+        const netScore = totalGross - liveHandicap;
 
         // Out/In breakdown
         let outGross = 0;
@@ -329,25 +393,20 @@ class GolfApp {
         let outPar = 0;
         let inPar = 0;
         
-        daysToProcess.forEach(d => {
-            const dayKey = `day${d}`;
-            const dayScores = this.state.scores[playerId]?.[dayKey] || Array(18).fill(null);
-            
-            // Out (Holes 1-9, index 0-8)
-            for (let i = 0; i < 9; i++) {
-                if (dayScores[i] !== null && dayScores[i] > 0) {
-                    outGross += dayScores[i];
-                    outPar += this.state.pars[i];
-                }
+        // Out (Holes 1-9, index 0-8)
+        for (let i = 0; i < 9; i++) {
+            if (dayScores[i] !== null && dayScores[i] > 0) {
+                outGross += dayScores[i];
+                outPar += this.state.pars[i];
             }
-            // In (Holes 10-18, index 9-17)
-            for (let i = 9; i < 18; i++) {
-                if (dayScores[i] !== null && dayScores[i] > 0) {
-                    inGross += dayScores[i];
-                    inPar += this.state.pars[i];
-                }
+        }
+        // In (Holes 10-18, index 9-17)
+        for (let i = 9; i < 18; i++) {
+            if (dayScores[i] !== null && dayScores[i] > 0) {
+                inGross += dayScores[i];
+                inPar += this.state.pars[i];
             }
-        });
+        }
 
         return {
             player,
@@ -362,8 +421,7 @@ class GolfApp {
             inGross,
             outPar,
             inPar,
-            // 完了したか (すべて入力済みか)
-            isFinished: playedHoles === maxHoles
+            isFinished: playedHoles === 18
         };
     }
 
@@ -679,7 +737,7 @@ class GolfApp {
                 row.className = 'reg-player-row';
                 row.innerHTML = `
                     <span class="reg-p-name">${p.name}</span>
-                    <span class="reg-p-hcp">独自イーブン値: +${p.handicap}</span>
+                    <span class="reg-p-hcp">イーブン値: D1(+${p.handicapDay1 ?? 0}) / D2(+${p.handicapDay2 ?? 0})</span>
                 `;
                 table.appendChild(row);
             });
@@ -747,6 +805,15 @@ class GolfApp {
             const netDiffText = this.formatScoreDiff(stat.netDiff, stat.playedHoles);
             const grossDiffText = this.formatScoreDiff(stat.grossDiff, stat.playedHoles);
             
+            let hcpText = "";
+            if (dayNum === 1) {
+                hcpText = `イーブン値 (D1): ${stat.player.handicapDay1 ?? 0} (按分: ${stat.liveHandicap})`;
+            } else if (dayNum === 2) {
+                hcpText = `イーブン値 (D2): ${stat.player.handicapDay2 ?? 0} (按分: ${stat.liveHandicap})`;
+            } else {
+                hcpText = `イーブン値: D1:${stat.player.handicapDay1 ?? 0} / D2:${stat.player.handicapDay2 ?? 0} (按分計: ${stat.liveHandicap})`;
+            }
+
             // Formulate detail row html for Out / In details
             const card = document.createElement('div');
             card.className = `glass-card leader-card pos-${rank}`;
@@ -762,7 +829,7 @@ class GolfApp {
                     <span class="leader-rank rank-${rank}">${rank}</span>
                     <div class="leader-name-section">
                         <div class="leader-name">${stat.player.name}</div>
-                        <div class="leader-handicap-tag">ハンデ値 (設定値): ${stat.player.handicap} (按分: ${stat.liveHandicap})</div>
+                        <div class="leader-handicap-tag">${hcpText}</div>
                     </div>
                     <div class="leader-scores">
                         <div class="score-item">
@@ -950,7 +1017,9 @@ class GolfApp {
         const grossDiff = totalGross - totalPar;
         
         // Single Day live handicap
-        const hcp = player.handicap || 0;
+        const hcp = this.scoreActiveDay === 1 
+            ? (player.handicapDay1 ?? 0) 
+            : (player.handicapDay2 ?? 0);
         const liveHcp = parseFloat((hcp * (totalPlayed / 18)).toFixed(1)); // Day specific handicap (base 18 holes)
         const netScore = totalGross - liveHcp;
         const netDiff = grossDiff - liveHcp;
@@ -1048,10 +1117,16 @@ class GolfApp {
             row.className = 'player-config-row';
             row.innerHTML = `
                 <span class="player-num-indicator">P${idx+1}</span>
-                <input type="text" class="player-name-input" id="settings-p-name-${p.id}" value="${p.name}" placeholder="選手名">
-                <div class="player-even-input-group">
-                    <span>イーブン:</span>
-                    <input type="number" class="player-even-input" id="settings-p-hcp-${p.id}" value="${p.handicap}" placeholder="ハンデ">
+                <span class="player-name-label">${p.name}</span>
+                <div class="player-even-inputs-container">
+                    <div class="player-even-input-group">
+                        <span>D1:</span>
+                        <input type="number" class="player-even-input" id="settings-p-hcp-day1-${p.id}" value="${p.handicapDay1 ?? 0}">
+                    </div>
+                    <div class="player-even-input-group">
+                        <span>D2:</span>
+                        <input type="number" class="player-even-input" id="settings-p-hcp-day2-${p.id}" value="${p.handicapDay2 ?? 0}">
+                    </div>
                 </div>
             `;
             playerList.appendChild(row);
@@ -1107,37 +1182,25 @@ class GolfApp {
     }
 
     savePlayersSettings() {
-        let hasError = false;
-        
         const newPlayers = this.state.players.map(p => {
-            const nameInput = document.getElementById(`settings-p-name-${p.id}`);
-            const hcpInput = document.getElementById(`settings-p-hcp-${p.id}`);
+            const hcpDay1Input = document.getElementById(`settings-p-hcp-day1-${p.id}`);
+            const hcpDay2Input = document.getElementById(`settings-p-hcp-day2-${p.id}`);
             
-            const name = nameInput.value.trim();
-            const handicap = parseInt(hcpInput.value, 10);
-            
-            if (!name) {
-                hasError = true;
-                nameInput.style.borderColor = 'var(--accent-red)';
-            } else {
-                nameInput.style.borderColor = 'var(--card-border)';
-            }
+            const hcp1 = parseInt(hcpDay1Input.value, 10);
+            const hcp2 = parseInt(hcpDay2Input.value, 10);
             
             return {
                 id: p.id,
-                name: name || p.name,
-                handicap: isNaN(handicap) ? 0 : handicap
+                name: p.name,
+                handicapDay1: isNaN(hcp1) ? 0 : hcp1,
+                handicapDay2: isNaN(hcp2) ? 0 : hcp2
             };
         });
-
-        if (hasError) {
-            this.showToast("選手名を入力してください", true);
-            return;
-        }
 
         this.state.players = newPlayers;
         this.saveState();
         this.showToast("選手・ハンデ情報を保存しました");
+        this.renderAll();
     }
 
     saveParSettings() {
