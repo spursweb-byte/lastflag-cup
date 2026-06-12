@@ -439,79 +439,113 @@ class GolfApp {
         const centerX = width / 2;
         const centerY = height / 2;
         
-        // Cyan and Dark Splatter Palette
+        // Cyan and Dark Splatter Palette (More fine-grained particles)
         const colors = ['#00d2ff', '#000000', '#050e14', '#00d2ff', '#000000'];
         const particles = [];
-        const particleCount = 26;
+        const particleCount = 65; // High particle count for fine details
         
         for (let i = 0; i < particleCount; i++) {
             const angle = Math.random() * Math.PI * 2;
-            const speed = 7 + Math.random() * 13;
+            const speed = 4 + Math.random() * 12; // Variable speed
+            
+            // Stagger start frames to create the "betta-betta-betta" stamp-like rhythm
+            const delay = Math.floor(Math.random() * 32); // Delay up to 32 frames
+            
             particles.push({
                 x: centerX,
                 y: centerY,
                 vx: Math.cos(angle) * speed,
                 vy: Math.sin(angle) * speed,
-                size: 12 + Math.random() * 18,
-                targetSize: Math.max(width, height) * 0.65,
+                size: 4 + Math.random() * 14, // Smaller, finer droplets
+                targetSize: Math.max(width, height) * 0.45, // Smaller target size for layered density
                 color: colors[i % colors.length],
+                delay: delay,
+                active: false,
+                age: 0,
                 subDroplets: []
             });
             
-            // Orbiting satellite droplets for splatter look
-            const subCount = 2 + Math.floor(Math.random() * 3);
+            // Orbiting satellite droplets for realistic splatter grunge texture
+            const subCount = 4 + Math.floor(Math.random() * 5);
             for (let j = 0; j < subCount; j++) {
                 particles[i].subDroplets.push({
-                    relX: (Math.random() - 0.5) * 55,
-                    relY: (Math.random() - 0.5) * 55,
-                    sizeRatio: 0.15 + Math.random() * 0.25
+                    relX: (Math.random() - 0.5) * 80, // Farther dispersion
+                    relY: (Math.random() - 0.5) * 80,
+                    sizeRatio: 0.1 + Math.random() * 0.25 // Smaller secondary droplets
                 });
             }
         }
         
         let phase = 'grow'; // 'grow' -> 'full' -> 'shrink'
-        let progress = 0;
+        let currentFrame = 0;
         let frameId;
         let switched = false;
+        let growCompleteFrame = 0;
         
         const animate = () => {
+            currentFrame++;
+            
             if (phase === 'grow') {
-                progress += 0.08; // Expand rapidly (approx 200ms)
-                if (progress >= 1.0) {
-                    progress = 1.0;
-                    phase = 'full';
-                }
-                
                 ctx.clearRect(0, 0, width, height);
                 
-                // Draw expanding ink particles
+                let fullyGrownCount = 0;
+                
                 particles.forEach(p => {
-                    p.x += p.vx;
-                    p.y += p.vy;
-                    const currentSize = p.size + (p.targetSize - p.size) * progress;
+                    if (currentFrame >= p.delay) {
+                        p.active = true;
+                        p.age++;
+                    }
                     
-                    ctx.fillStyle = p.color;
-                    ctx.beginPath();
-                    ctx.arc(p.x, p.y, currentSize, 0, Math.PI * 2);
-                    ctx.fill();
-                    
-                    p.subDroplets.forEach(sub => {
+                    if (p.active) {
+                        // Stretched growth over time (approx 35 frames max per droplet)
+                        const growDuration = 35;
+                        const t = Math.min(1.0, p.age / growDuration);
+                        
+                        if (t >= 1.0) {
+                            fullyGrownCount++;
+                        }
+                        
+                        // Physics motion with slight friction to slow down and "stick" (heavy splatter feel)
+                        p.vx *= 0.96;
+                        p.vy *= 0.96;
+                        p.x += p.vx;
+                        p.y += p.vy;
+                        
+                        const currentSize = p.size + (p.targetSize - p.size) * t;
+                        
+                        ctx.fillStyle = p.color;
                         ctx.beginPath();
-                        ctx.arc(
-                            p.x + sub.relX * (1 + progress * 1.6), 
-                            p.y + sub.relY * (1 + progress * 1.6), 
-                            currentSize * sub.sizeRatio, 
-                            0, 
-                            Math.PI * 2
-                        );
+                        ctx.arc(p.x, p.y, currentSize, 0, Math.PI * 2);
                         ctx.fill();
-                    });
+                        
+                        p.subDroplets.forEach(sub => {
+                            ctx.beginPath();
+                            ctx.arc(
+                                p.x + sub.relX * (1 + t * 2.2), 
+                                p.y + sub.relY * (1 + t * 2.2), 
+                                currentSize * sub.sizeRatio, 
+                                0, 
+                                Math.PI * 2
+                            );
+                            ctx.fill();
+                        });
+                    }
                 });
                 
-                // Full coverage fill-in as grow nears completion
-                if (progress > 0.8) {
+                // Transition to 'full' once all are mostly grown or safety limit is reached
+                const allStarted = particles.every(p => p.active);
+                const safetyLimit = currentFrame > 85;
+                
+                if ((allStarted && fullyGrownCount >= particles.length * 0.9) || safetyLimit) {
+                    phase = 'full';
+                    growCompleteFrame = currentFrame;
+                }
+                
+                // Solid fill-in overlay at the final stage of grow phase
+                const growProgress = currentFrame / 75; // Normalized overall progress
+                if (growProgress > 0.75) {
                     ctx.fillStyle = '#000000';
-                    ctx.globalAlpha = (progress - 0.8) / 0.2;
+                    ctx.globalAlpha = Math.min(1.0, (growProgress - 0.75) / 0.25);
                     ctx.fillRect(0, 0, width, height);
                     ctx.globalAlpha = 1.0;
                 }
@@ -525,11 +559,15 @@ class GolfApp {
                     switched = true;
                 }
                 
-                phase = 'shrink';
-                progress = 0;
+                // Hold full covered state for 6 frames (~100ms) to feel heavy and impact-rich
+                if (currentFrame - growCompleteFrame > 6) {
+                    phase = 'shrink';
+                    progress = 0;
+                }
                 
             } else if (phase === 'shrink') {
-                progress += 0.055; // Smooth erase reveal (approx 300ms)
+                // Slightly slower erase reveal (approx 40 frames total / 650ms)
+                progress += 0.026;
                 if (progress >= 1.0) {
                     canvas.style.pointerEvents = 'none';
                     ctx.clearRect(0, 0, width, height);
@@ -544,14 +582,18 @@ class GolfApp {
                 ctx.globalCompositeOperation = 'destination-out';
                 
                 // Erase mask from center outwards with jagged splatter edge
-                const eraseRadius = Math.max(width, height) * 1.35 * progress;
+                const eraseRadius = Math.max(width, height) * 1.4 * progress;
                 ctx.fillStyle = 'rgba(0, 0, 0, 1)';
                 
                 ctx.beginPath();
-                const steps = 24;
+                const steps = 36; // More steps for finer detail
                 for (let i = 0; i <= steps; i++) {
                     const angle = (i / steps) * Math.PI * 2;
-                    const noise = 0.82 + Math.sin(angle * 7) * 0.1 + Math.cos(angle * 13) * 0.04;
+                    // Highly complex grunge splatter silhouette edge
+                    const noise = 0.8 + 
+                                  Math.sin(angle * 9) * 0.12 + 
+                                  Math.cos(angle * 19) * 0.06 + 
+                                  Math.sin(angle * 31) * 0.02;
                     const r = eraseRadius * noise;
                     const x = centerX + Math.cos(angle) * r;
                     const y = centerY + Math.sin(angle) * r;
@@ -562,13 +604,13 @@ class GolfApp {
                 ctx.closePath();
                 ctx.fill();
                 
-                // Flying splatter particles erase for extra grunge texture
-                for (let i = 0; i < 10; i++) {
-                    const angle = (i / 10) * Math.PI * 2 + progress;
-                    const r = eraseRadius * 0.72 + Math.sin(i) * 40;
+                // Fine flying ink spots erased around the main opening
+                for (let i = 0; i < 22; i++) {
+                    const angle = (i / 22) * Math.PI * 2 + progress * 1.5;
+                    const r = eraseRadius * 0.8 + Math.sin(i * 3) * 60;
                     const x = centerX + Math.cos(angle) * r;
                     const y = centerY + Math.sin(angle) * r;
-                    const size = 52 * (1 - progress);
+                    const size = 32 * (1 - progress) * (0.5 + Math.random() * 0.5);
                     ctx.beginPath();
                     ctx.arc(x, y, Math.max(0, size), 0, Math.PI * 2);
                     ctx.fill();
@@ -579,6 +621,9 @@ class GolfApp {
             
             frameId = requestAnimationFrame(animate);
         };
+        
+        frameId = requestAnimationFrame(animate);
+    }
         
         frameId = requestAnimationFrame(animate);
     }
