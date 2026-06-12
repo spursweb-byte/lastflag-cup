@@ -8,11 +8,13 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700;900&family=Outfit:wght@400;600;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="style-v2.css?v=1.0.17">
+    <link rel="stylesheet" href="style-v2.css?v=1.0.18">
 </head>
 <body>
     <!-- App Container -->
     <div id="app" class="app-container">
+        <!-- Transition Canvas for Splash/Ink effect -->
+        <canvas id="transition-canvas" class="transition-canvas"></canvas>
         <!-- Splash Screen Animation Overlay -->
         <div id="splash-screen" class="splash-screen">
             <div class="splash-scanlines"></div>
@@ -356,6 +358,6 @@
     <!-- Alert / Toast Notifications -->
     <div id="toast-container" class="toast-container"></div>
 
-    <script src="app-v2.js?v=1.0.17"></script>
+    <script src="app-v2.js?v=1.0.18"></script>
 </body>
 </html>

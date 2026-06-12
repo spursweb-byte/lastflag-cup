@@ -83,47 +83,16 @@ body {
     z-index: 1;
 }
 
-/* Neon Scan Transition overlay on Main Content */
-.main-content::after {
-    content: "";
+/* Transition Canvas for Splash/Ink effect */
+.transition-canvas {
     position: absolute;
     top: 0;
-    left: -150%;
+    left: 0;
     width: 100%;
     height: 100%;
-    background: linear-gradient(
-        90deg,
-        transparent 20%,
-        rgba(0, 210, 255, 0.85) 48%,
-        #ffffff 50%,
-        rgba(0, 210, 255, 0.85) 52%,
-        transparent 80%
-    );
-    transform: skewX(-20deg);
-    z-index: 999;
+    z-index: 9999;
     pointer-events: none;
-    opacity: 0;
-}
-
-.main-content.scan-running::after {
-    animation: neonScanPass 0.5s cubic-bezier(0.25, 1, 0.5, 1) forwards;
-}
-
-@keyframes neonScanPass {
-    0% {
-        left: -150%;
-        opacity: 0;
-    }
-    20% {
-        opacity: 1;
-    }
-    80% {
-        opacity: 1;
-    }
-    100% {
-        left: 150%;
-        opacity: 0;
-    }
+    display: block;
 }
 
 /* PAGES */

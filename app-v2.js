@@ -386,21 +386,8 @@ class GolfApp {
     // NAVIGATION
     switchTab(tabId) {
         this.currentTab = tabId;
-        const mainContent = document.querySelector('.main-content');
         
-        if (mainContent) {
-            mainContent.classList.remove('scan-running');
-            void mainContent.offsetWidth; // Trigger reflow to restart animation
-            mainContent.classList.add('scan-running');
-            
-            // Remove class after the scan line animation completes
-            setTimeout(() => {
-                mainContent.classList.remove('scan-running');
-            }, 550);
-        }
-        
-        // Slightly delay actual UI render to match the neon scan light beam passing the center
-        setTimeout(() => {
+        this.triggerSplashTransition(() => {
             // Update DOM active classes for pages
             document.querySelectorAll('.page').forEach(page => {
                 page.classList.remove('active');
@@ -426,7 +413,174 @@ class GolfApp {
             
             // Trigger tab-specific renders
             this.renderActiveTab();
-        }, 150);
+        });
+    }
+
+    triggerSplashTransition(callback) {
+        const canvas = document.getElementById('transition-canvas');
+        if (!canvas) {
+            callback();
+            return;
+        }
+        
+        const ctx = canvas.getContext('2d');
+        
+        // Match canvas dimensions to the app-container for pixel perfect alignment in mobile frame
+        const container = document.getElementById('app');
+        const width = container ? container.clientWidth : window.innerWidth;
+        const height = container ? container.clientHeight : window.innerHeight;
+        
+        canvas.width = width;
+        canvas.height = height;
+        
+        // Block interaction during transition
+        canvas.style.pointerEvents = 'auto';
+        
+        const centerX = width / 2;
+        const centerY = height / 2;
+        
+        // Cyan and Dark Splatter Palette
+        const colors = ['#00d2ff', '#000000', '#050e14', '#00d2ff', '#000000'];
+        const particles = [];
+        const particleCount = 26;
+        
+        for (let i = 0; i < particleCount; i++) {
+            const angle = Math.random() * Math.PI * 2;
+            const speed = 7 + Math.random() * 13;
+            particles.push({
+                x: centerX,
+                y: centerY,
+                vx: Math.cos(angle) * speed,
+                vy: Math.sin(angle) * speed,
+                size: 12 + Math.random() * 18,
+                targetSize: Math.max(width, height) * 0.65,
+                color: colors[i % colors.length],
+                subDroplets: []
+            });
+            
+            // Orbiting satellite droplets for splatter look
+            const subCount = 2 + Math.floor(Math.random() * 3);
+            for (let j = 0; j < subCount; j++) {
+                particles[i].subDroplets.push({
+                    relX: (Math.random() - 0.5) * 55,
+                    relY: (Math.random() - 0.5) * 55,
+                    sizeRatio: 0.15 + Math.random() * 0.25
+                });
+            }
+        }
+        
+        let phase = 'grow'; // 'grow' -> 'full' -> 'shrink'
+        let progress = 0;
+        let frameId;
+        let switched = false;
+        
+        const animate = () => {
+            if (phase === 'grow') {
+                progress += 0.08; // Expand rapidly (approx 200ms)
+                if (progress >= 1.0) {
+                    progress = 1.0;
+                    phase = 'full';
+                }
+                
+                ctx.clearRect(0, 0, width, height);
+                
+                // Draw expanding ink particles
+                particles.forEach(p => {
+                    p.x += p.vx;
+                    p.y += p.vy;
+                    const currentSize = p.size + (p.targetSize - p.size) * progress;
+                    
+                    ctx.fillStyle = p.color;
+                    ctx.beginPath();
+                    ctx.arc(p.x, p.y, currentSize, 0, Math.PI * 2);
+                    ctx.fill();
+                    
+                    p.subDroplets.forEach(sub => {
+                        ctx.beginPath();
+                        ctx.arc(
+                            p.x + sub.relX * (1 + progress * 1.6), 
+                            p.y + sub.relY * (1 + progress * 1.6), 
+                            currentSize * sub.sizeRatio, 
+                            0, 
+                            Math.PI * 2
+                        );
+                        ctx.fill();
+                    });
+                });
+                
+                // Full coverage fill-in as grow nears completion
+                if (progress > 0.8) {
+                    ctx.fillStyle = '#000000';
+                    ctx.globalAlpha = (progress - 0.8) / 0.2;
+                    ctx.fillRect(0, 0, width, height);
+                    ctx.globalAlpha = 1.0;
+                }
+                
+            } else if (phase === 'full') {
+                ctx.fillStyle = '#000000';
+                ctx.fillRect(0, 0, width, height);
+                
+                if (!switched) {
+                    callback();
+                    switched = true;
+                }
+                
+                phase = 'shrink';
+                progress = 0;
+                
+            } else if (phase === 'shrink') {
+                progress += 0.055; // Smooth erase reveal (approx 300ms)
+                if (progress >= 1.0) {
+                    canvas.style.pointerEvents = 'none';
+                    ctx.clearRect(0, 0, width, height);
+                    cancelAnimationFrame(frameId);
+                    return;
+                }
+                
+                ctx.clearRect(0, 0, width, height);
+                ctx.fillStyle = '#000000';
+                ctx.fillRect(0, 0, width, height);
+                
+                ctx.globalCompositeOperation = 'destination-out';
+                
+                // Erase mask from center outwards with jagged splatter edge
+                const eraseRadius = Math.max(width, height) * 1.35 * progress;
+                ctx.fillStyle = 'rgba(0, 0, 0, 1)';
+                
+                ctx.beginPath();
+                const steps = 24;
+                for (let i = 0; i <= steps; i++) {
+                    const angle = (i / steps) * Math.PI * 2;
+                    const noise = 0.82 + Math.sin(angle * 7) * 0.1 + Math.cos(angle * 13) * 0.04;
+                    const r = eraseRadius * noise;
+                    const x = centerX + Math.cos(angle) * r;
+                    const y = centerY + Math.sin(angle) * r;
+                    
+                    if (i === 0) ctx.moveTo(x, y);
+                    else ctx.lineTo(x, y);
+                }
+                ctx.closePath();
+                ctx.fill();
+                
+                // Flying splatter particles erase for extra grunge texture
+                for (let i = 0; i < 10; i++) {
+                    const angle = (i / 10) * Math.PI * 2 + progress;
+                    const r = eraseRadius * 0.72 + Math.sin(i) * 40;
+                    const x = centerX + Math.cos(angle) * r;
+                    const y = centerY + Math.sin(angle) * r;
+                    const size = 52 * (1 - progress);
+                    ctx.beginPath();
+                    ctx.arc(x, y, Math.max(0, size), 0, Math.PI * 2);
+                    ctx.fill();
+                }
+                
+                ctx.globalCompositeOperation = 'source-over';
+            }
+            
+            frameId = requestAnimationFrame(animate);
+        };
+        
+        frameId = requestAnimationFrame(animate);
     }
 
     goHome() {
