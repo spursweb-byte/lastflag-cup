@@ -11,10 +11,10 @@ class GolfApp {
                 date: "2026/07/10 - 07/11"
             },
             players: [
-                { id: 1, name: "田安プロ", handicapDay1: 0, handicapDay2: 0 },
-                { id: 2, name: "黒岩プロ", handicapDay1: 0, handicapDay2: 0 },
-                { id: 3, name: "渡辺プロ", handicapDay1: 0, handicapDay2: 0 },
-                { id: 4, name: "ジャンボ慎太アマ", handicapDay1: 0, handicapDay2: 0 }
+                { id: 1, name: "田安プロ", handicapDay1: 120, handicapDay2: 120 },
+                { id: 2, name: "黒岩プロ", handicapDay1: 99, handicapDay2: 99 },
+                { id: 3, name: "渡辺プロ", handicapDay1: 112, handicapDay2: 112 },
+                { id: 4, name: "ジャンボ慎太アマ", handicapDay1: 135, handicapDay2: 135 }
             ],
             pars: [4, 4, 3, 4, 5, 4, 3, 4, 5,  4, 3, 4, 4, 5, 3, 4, 4, 5], // 18 holes par (Out: 36, In: 36)
             scores: {
@@ -235,6 +235,28 @@ class GolfApp {
                     });
                 } else {
                     this.state.players = JSON.parse(JSON.stringify(this.defaultState.players));
+                    migrated = true;
+                }
+
+                // Migrate to new default handicaps (2026/06/15)
+                const newDefaultHandicaps = {
+                    1: 120, // 田安プロ
+                    2: 99,  // 黒岩プロ
+                    3: 112, // 渡辺プロ
+                    4: 135  // ジャンボ慎太アマ
+                };
+                if (!this.state.handicaps_updated_20260615) {
+                    if (this.state.players) {
+                        this.state.players = this.state.players.map(p => {
+                            const defaultHcp = newDefaultHandicaps[p.id];
+                            if (defaultHcp !== undefined) {
+                                p.handicapDay1 = defaultHcp;
+                                p.handicapDay2 = defaultHcp;
+                            }
+                            return p;
+                        });
+                    }
+                    this.state.handicaps_updated_20260615 = true;
                     migrated = true;
                 }
 
