@@ -8,7 +8,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700;900&family=Outfit:wght@400;600;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="style-v2.css?v=1.0.22">
+    <link rel="stylesheet" href="style-v2.css?v=1.0.23">
 </head>
 <body>
     <!-- App Container -->
@@ -271,6 +271,13 @@
                     <div class="glass-card settings-card">
                         <h3 class="card-section-title">⛳ 基準打数 (Par) 設定</h3>
                         <p class="settings-desc">各ホールの規定打数を設定できます（デフォルトは計72）。</p>
+                        <div class="selector-row" style="margin: 10px 0 15px 0; display: flex; align-items: center; gap: 10px;">
+                            <span class="selector-label" style="font-size: 0.8rem; color: var(--text-muted); font-weight:600;">対象日程:</span>
+                            <div class="segmented-control mini" style="flex: 1;">
+                                <button class="control-btn active" id="btn-par-edit-day1" onclick="app.changeParEditDay(1)">Day 1</button>
+                                <button class="control-btn" id="btn-par-edit-day2" onclick="app.changeParEditDay(2)">Day 2</button>
+                            </div>
+                        </div>
                         <div class="par-edit-container">
                             <div class="par-edit-section">
                                 <h4 class="par-edit-title">OUT (1-9)</h4>
@@ -326,6 +333,6 @@
     <!-- Alert / Toast Notifications -->
     <div id="toast-container" class="toast-container"></div>
 
-    <script src="app-v2.js?v=1.0.22"></script>
+    <script src="app-v2.js?v=1.0.23"></script>
 </body>
 </html>

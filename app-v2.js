@@ -16,7 +16,8 @@ class GolfApp {
                 { id: 3, name: "渡辺プロ", handicapDay1: 112, handicapDay2: 112 },
                 { id: 4, name: "ジャンボ慎太アマ", handicapDay1: 135, handicapDay2: 135 }
             ],
-            pars: [4, 4, 3, 4, 5, 4, 3, 4, 5,  4, 3, 4, 4, 5, 3, 4, 4, 5], // 18 holes par (Out: 36, In: 36)
+            parsDay1: [4, 3, 4, 4, 4, 4, 3, 5, 5,  5, 4, 4, 3, 5, 4, 3, 4, 4], // Day 1 Pars (Total: 72)
+            parsDay2: [4, 4, 3, 4, 5, 4, 3, 4, 5,  4, 3, 4, 4, 5, 3, 4, 4, 5], // Day 2 Pars (Total: 72)
             scores: {
                 1: { day1: Array(18).fill(null), day2: Array(18).fill(null) },
                 2: { day1: Array(18).fill(null), day2: Array(18).fill(null) },
@@ -36,6 +37,9 @@ class GolfApp {
         this.scoreActiveDay = 1; // 1 or 2
         this.scoreActivePlayerId = 1; // Player ID
         this.scoreActiveHalf = 'out'; // 'out', 'in', 'summary'
+        
+        // Par settings active editing day
+        this.parEditActiveDay = 1; // 1 or 2
         
         // Keypad Modal States
         this.keypadState = {
@@ -184,21 +188,44 @@ class GolfApp {
             if (saved) {
                 this.state = JSON.parse(saved);
                 // Schema validation / migration if necessary
-                if (!this.state.pars || this.state.pars.length !== 18) {
-                    this.state.pars = [...this.defaultState.pars];
+                let migrated = false;
+                
+                if (!this.state.parsDay1 || this.state.parsDay1.length !== 18) {
+                    this.state.parsDay1 = this.state.pars 
+                        ? [...this.state.pars] 
+                        : [...this.defaultState.parsDay1];
+                    migrated = true;
                 }
+                if (!this.state.parsDay2 || this.state.parsDay2.length !== 18) {
+                    this.state.parsDay2 = this.state.pars 
+                        ? [...this.state.pars] 
+                        : [...this.defaultState.parsDay2];
+                    migrated = true;
+                }
+                if (this.state.pars) {
+                    delete this.state.pars;
+                    migrated = true;
+                }
+                
+                // Force update Day 1 Pars to user's specified layout (2026/06/16)
+                if (!this.state.pars_updated_20260616) {
+                    this.state.parsDay1 = [...this.defaultState.parsDay1];
+                    this.state.pars_updated_20260616 = true;
+                    migrated = true;
+                }
+
                 // Check if scores is properly initialized
                 if (!this.state.scores) {
                     this.state.scores = { ...this.defaultState.scores };
+                    migrated = true;
                 }
                 // Migrate date if it's the old default to automatically reflect new dates
                 if (this.state.tournament && this.state.tournament.date === "2026/06/11 - 06/12") {
                     this.state.tournament.date = "2026/07/10 - 07/11";
-                    this.saveState();
+                    migrated = true;
                 }
 
                 // Migrate players and handicaps to D1/D2 style
-                let migrated = false;
                 const fixedNames = {
                     1: "田安プロ",
                     2: "黒岩プロ",
@@ -387,6 +414,8 @@ class GolfApp {
             ? (player.handicapDay1 ?? 0) 
             : (player.handicapDay2 ?? 0);
         
+        const pars = dayNum === 1 ? this.state.parsDay1 : this.state.parsDay2;
+        
         let playedHoles = 0;
         let totalGross = 0;
         let totalPar = 0;
@@ -398,7 +427,7 @@ class GolfApp {
             if (score !== null && score > 0) {
                 playedHoles++;
                 totalGross += score;
-                totalPar += this.state.pars[idx];
+                totalPar += pars[idx];
             }
         });
 
@@ -419,14 +448,14 @@ class GolfApp {
         for (let i = 0; i < 9; i++) {
             if (dayScores[i] !== null && dayScores[i] > 0) {
                 outGross += dayScores[i];
-                outPar += this.state.pars[i];
+                outPar += pars[i];
             }
         }
         // In (Holes 10-18, index 9-17)
         for (let i = 9; i < 18; i++) {
             if (dayScores[i] !== null && dayScores[i] > 0) {
                 inGross += dayScores[i];
-                inPar += this.state.pars[i];
+                inPar += pars[i];
             }
         }
 
@@ -765,23 +794,42 @@ class GolfApp {
             });
         }
 
-        // Calculate total par, out par, in par
-        let outPar = 0;
-        let inPar = 0;
+        // Calculate pars for Day 1 and Day 2
+        let outPar1 = 0, inPar1 = 0;
+        let outPar2 = 0, inPar2 = 0;
         for (let i = 0; i < 9; i++) {
-            outPar += this.state.pars[i];
+            outPar1 += this.state.parsDay1[i];
+            outPar2 += this.state.parsDay2[i];
         }
         for (let i = 9; i < 18; i++) {
-            inPar += this.state.pars[i];
+            inPar1 += this.state.parsDay1[i];
+            inPar2 += this.state.parsDay2[i];
         }
-        const totalPar = outPar + inPar;
+        
+        const totalPar1 = outPar1 + inPar1;
+        const totalPar2 = outPar2 + inPar2;
+        
+        let displayTotal, displayOut, displayIn;
+        if (this.leaderboardDay === 'day1') {
+            displayTotal = `${totalPar1}`;
+            displayOut = `${outPar1}`;
+            displayIn = `${inPar1}`;
+        } else if (this.leaderboardDay === 'day2') {
+            displayTotal = `${totalPar2}`;
+            displayOut = `${outPar2}`;
+            displayIn = `${inPar2}`;
+        } else {
+            displayTotal = `${totalPar1 + totalPar2} (D1:${totalPar1} / D2:${totalPar2})`;
+            displayOut = `D1:${outPar1} / D2:${outPar2}`;
+            displayIn = `D1:${inPar1} / D2:${inPar2}`;
+        }
 
         const totalParElem = document.getElementById('regulation-total-par');
         const outParElem = document.getElementById('regulation-out-par');
         const inParElem = document.getElementById('regulation-in-par');
-        if (totalParElem) totalParElem.innerText = totalPar;
-        if (outParElem) outParElem.innerText = outPar;
-        if (inParElem) inParElem.innerText = inPar;
+        if (totalParElem) totalParElem.innerText = displayTotal;
+        if (outParElem) outParElem.innerText = displayOut;
+        if (inParElem) inParElem.innerText = displayIn;
     }
 
     renderHome() {
@@ -968,7 +1016,8 @@ class GolfApp {
 
     createScoreRowElement(holeIdx, score) {
         const holeNum = holeIdx + 1;
-        const parVal = this.state.pars[holeIdx];
+        const pars = this.scoreActiveDay === 1 ? this.state.parsDay1 : this.state.parsDay2;
+        const parVal = pars[holeIdx];
         
         const row = document.createElement('div');
         row.className = 'score-grid-row';
@@ -1014,13 +1063,15 @@ class GolfApp {
         let grossOut = 0, grossIn = 0;
         let parOut = 0, parIn = 0;
         
+        const pars = this.scoreActiveDay === 1 ? this.state.parsDay1 : this.state.parsDay2;
+
         // Out Calculations
         for (let i = 0; i < 9; i++) {
             const s = dayScores[i];
             if (s !== null && s > 0) {
                 playedOut++;
                 grossOut += s;
-                parOut += this.state.pars[i];
+                parOut += pars[i];
             }
         }
         // In Calculations
@@ -1029,7 +1080,7 @@ class GolfApp {
             if (s !== null && s > 0) {
                 playedIn++;
                 grossIn += s;
-                parIn += this.state.pars[i];
+                parIn += pars[i];
             }
         }
 
@@ -1089,7 +1140,8 @@ class GolfApp {
         }
         
         let currentValue = this.state.scores[playerId][dayKey][holeIdx];
-        const parVal = this.state.pars[holeIdx];
+        const pars = this.scoreActiveDay === 1 ? this.state.parsDay1 : this.state.parsDay2;
+        const parVal = pars[holeIdx];
         
         if (currentValue === null || currentValue <= 0) {
             // If empty, pressing + or - sets it to Par first
@@ -1173,9 +1225,10 @@ class GolfApp {
     createParEditCell(holeIdx) {
         const cell = document.createElement('div');
         cell.className = 'par-edit-cell';
+        const pars = this.parEditActiveDay === 1 ? this.state.parsDay1 : this.state.parsDay2;
         cell.innerHTML = `
             <span class="par-cell-num">${holeIdx + 1}</span>
-            <input type="number" class="par-cell-input" id="settings-par-${holeIdx}" value="${this.state.pars[holeIdx]}" min="3" max="5">
+            <input type="number" class="par-cell-input" id="settings-par-${holeIdx}" value="${pars[holeIdx]}" min="3" max="5">
         `;
         return cell;
     }
@@ -1225,6 +1278,28 @@ class GolfApp {
         this.renderAll();
     }
 
+    changeParEditDay(dayNum) {
+        this.parEditActiveDay = dayNum;
+        
+        document.querySelectorAll('#page-settings .segmented-control.mini .control-btn').forEach(btn => {
+            btn.classList.remove('active');
+        });
+        document.getElementById(`btn-par-edit-day${dayNum}`).classList.add('active');
+        
+        // Re-render only Par settings inputs
+        const parOutGrid = document.getElementById('par-edit-out');
+        const parInGrid = document.getElementById('par-edit-in');
+        parOutGrid.innerHTML = '';
+        parInGrid.innerHTML = '';
+        
+        for (let i = 0; i < 9; i++) {
+            parOutGrid.appendChild(this.createParEditCell(i));
+        }
+        for (let i = 9; i < 18; i++) {
+            parInGrid.appendChild(this.createParEditCell(i));
+        }
+    }
+
     saveParSettings() {
         const newPars = [];
         for (let i = 0; i < 18; i++) {
@@ -1237,9 +1312,15 @@ class GolfApp {
             newPars.push(parVal);
         }
         
-        this.state.pars = newPars;
+        if (this.parEditActiveDay === 1) {
+            this.state.parsDay1 = newPars;
+        } else {
+            this.state.parsDay2 = newPars;
+        }
+        
         this.saveState();
-        this.showToast("基準打数(Par)設定を保存しました");
+        this.showToast(`Day ${this.parEditActiveDay} の基準打数(Par)設定を保存しました`);
+        this.renderAll();
     }
 
     // HELPER FORMATTING
