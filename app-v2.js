@@ -24,8 +24,8 @@ class GolfApp {
                 3: { day1: Array(18).fill(null), day2: Array(18).fill(null) },
                 4: { day1: Array(18).fill(null), day2: Array(18).fill(null) }
             },
-            supabaseUrl: "",
-            supabaseKey: "",
+            supabaseUrl: "https://knmvtvuzsxxqyzcmjabx.supabase.co",
+            supabaseKey: "sb_publishable_xGwIts9wDPZx7u9nCBGkog_TEc8fSah",
             last_updated: Date.now()
         };
 
@@ -293,13 +293,11 @@ class GolfApp {
                     migrated = true;
                 }
 
-                // Migrate to Supabase properties
-                if (this.state.supabaseUrl === undefined) {
-                    this.state.supabaseUrl = "";
-                    migrated = true;
-                }
-                if (this.state.supabaseKey === undefined) {
-                    this.state.supabaseKey = "";
+                // Migrate to Supabase properties and set default config
+                if (this.state.supabaseUrl !== "https://knmvtvuzsxxqyzcmjabx.supabase.co" || 
+                    this.state.supabaseKey !== "sb_publishable_xGwIts9wDPZx7u9nCBGkog_TEc8fSah") {
+                    this.state.supabaseUrl = "https://knmvtvuzsxxqyzcmjabx.supabase.co";
+                    this.state.supabaseKey = "sb_publishable_xGwIts9wDPZx7u9nCBGkog_TEc8fSah";
                     migrated = true;
                 }
                 if (this.state.last_updated === undefined) {
