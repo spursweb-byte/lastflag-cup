@@ -25,7 +25,7 @@ class GolfApp {
                 4: { day1: Array(18).fill(null), day2: Array(18).fill(null) }
             },
             supabaseUrl: "https://knmvtvuzsxxqyzcmjabx.supabase.co",
-            supabaseKey: "sb_publishable_xGwIts9wDPZx7u9nCBGkog_TEc8fSah",
+            supabaseKey: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtubXZ0dnV6c3h4cXl6Y21qYWJ4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE2MDI5MzgsImV4cCI6MjA5NzE3ODkzOH0.JflRPdhYfADl5wh2jZCObqrlycrKFCe-cb43Q-XXEdU",
             last_updated: Date.now()
         };
 
@@ -295,9 +295,9 @@ class GolfApp {
 
                 // Migrate to Supabase properties and set default config
                 if (this.state.supabaseUrl !== "https://knmvtvuzsxxqyzcmjabx.supabase.co" || 
-                    this.state.supabaseKey !== "sb_publishable_xGwIts9wDPZx7u9nCBGkog_TEc8fSah") {
+                    this.state.supabaseKey !== "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtubXZ0dnV6c3h4cXl6Y21qYWJ4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE2MDI5MzgsImV4cCI6MjA5NzE3ODkzOH0.JflRPdhYfADl5wh2jZCObqrlycrKFCe-cb43Q-XXEdU") {
                     this.state.supabaseUrl = "https://knmvtvuzsxxqyzcmjabx.supabase.co";
-                    this.state.supabaseKey = "sb_publishable_xGwIts9wDPZx7u9nCBGkog_TEc8fSah";
+                    this.state.supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtubXZ0dnV6c3h4cXl6Y21qYWJ4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE2MDI5MzgsImV4cCI6MjA5NzE3ODkzOH0.JflRPdhYfADl5wh2jZCObqrlycrKFCe-cb43Q-XXEdU";
                     migrated = true;
                 }
                 if (this.state.last_updated === undefined) {
