@@ -147,10 +147,13 @@ body {
 
 .page-title {
     font-family: 'Outfit', sans-serif;
-    font-size: 1.6rem;
+    font-size: 1.4rem;
     font-weight: 800;
-    letter-spacing: 1px;
+    letter-spacing: 0.5px;
     color: var(--text-primary);
+    flex: 1;
+    text-align: center;
+    margin: 0;
 }
 
 .tournament-date {
@@ -1298,22 +1301,24 @@ button:active, .portal-menu-card:active, .player-chip:active, .score-cell-btn:ac
 .header-top-row {
     display: flex;
     align-items: center;
-    gap: 12px;
+    justify-content: space-between;
+    width: 100%;
+    gap: 8px;
 }
 
 .header-back-btn {
     display: inline-flex;
     align-items: center;
     gap: 6px;
-    padding: 6px 12px;
-    background: rgba(255, 255, 255, 0.05);
+    padding: 7px 12px;
+    background: rgba(255, 255, 255, 0.04);
     border: 1px solid rgba(255, 255, 255, 0.08);
     border-radius: 12px;
     color: var(--text-secondary);
     font-size: 0.8rem;
     font-weight: 600;
     line-height: 1;
-    transition: all 0.2s;
+    transition: all 0.18s;
 }
 
 .header-back-btn svg {
@@ -1323,8 +1328,45 @@ button:active, .portal-menu-card:active, .player-chip:active, .score-cell-btn:ac
 }
 
 .header-back-btn:active {
-    background: rgba(255, 255, 255, 0.15);
+    background: rgba(255, 255, 255, 0.12);
     color: var(--text-primary);
+    transform: scale(0.92);
+}
+
+.header-reload-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    background: rgba(0, 210, 255, 0.04);
+    border: 1px solid rgba(0, 210, 255, 0.15);
+    border-radius: 12px;
+    color: var(--accent-green);
+    cursor: pointer;
+    transition: all 0.18s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.header-reload-btn svg {
+    width: 15px;
+    height: 15px;
+    stroke: var(--accent-green);
+}
+
+.header-reload-btn:active {
+    transform: scale(0.85);
+    background: rgba(0, 210, 255, 0.12);
+    border-color: var(--accent-green);
+}
+
+@keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+.header-reload-btn.syncing svg {
+    animation: spin 0.8s linear infinite;
+    stroke: var(--accent-green) !important;
 }
 
 /* PORTAL TOP PAGE SPECIFIC */

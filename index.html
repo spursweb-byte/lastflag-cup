@@ -8,7 +8,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700;900&family=Outfit:wght@400;600;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="style-v2.css?v=1.0.23">
+    <link rel="stylesheet" href="style-v2.css?v=1.0.24">
 </head>
 <body>
     <!-- App Container -->
@@ -85,6 +85,9 @@
                             ホーム
                         </button>
                         <h1 class="page-title">🏆 LEADERBOARD</h1>
+                        <button class="header-reload-btn" onclick="app.syncWithCloud()" title="クラウド同期更新">
+                            <svg class="reload-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"></polyline><polyline points="1 20 1 14 7 14"></polyline><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path></svg>
+                        </button>
                     </div>
                     <!-- Sub Navigation for Days -->
                     <div class="segmented-control">
@@ -111,6 +114,9 @@
                             ホーム
                         </button>
                         <h1 class="page-title">💡 REGULATION</h1>
+                        <button class="header-reload-btn" onclick="app.syncWithCloud()" title="クラウド同期更新">
+                            <svg class="reload-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"></polyline><polyline points="1 20 1 14 7 14"></polyline><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path></svg>
+                        </button>
                     </div>
                 </header>
 
@@ -170,6 +176,9 @@
                             ホーム
                         </button>
                         <h1 class="page-title">📝 SCORE INPUT</h1>
+                        <button class="header-reload-btn" onclick="app.syncWithCloud()" title="クラウド同期更新">
+                            <svg class="reload-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"></polyline><polyline points="1 20 1 14 7 14"></polyline><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path></svg>
+                        </button>
                     </div>
                     <!-- Player Selector & Day Selector -->
                     <div class="selectors-container">
@@ -240,6 +249,9 @@
                             ホーム
                         </button>
                         <h1 class="page-title">⚙️ SETTINGS</h1>
+                        <button class="header-reload-btn" onclick="app.syncWithCloud()" title="クラウド同期更新">
+                            <svg class="reload-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"></polyline><polyline points="1 20 1 14 7 14"></polyline><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path></svg>
+                        </button>
                     </div>
                 </header>
 
@@ -256,6 +268,21 @@
                             <input type="text" id="input-tournament-date" class="text-input" placeholder="2026/6/11 - 6/12">
                         </div>
                         <button class="solid-btn" onclick="app.saveTournamentInfo()">大会情報を保存</button>
+                    </div>
+
+                    <!-- Supabase Config Card -->
+                    <div class="glass-card settings-card">
+                        <h3 class="card-section-title">☁️ クラウド同期 (Supabase) 設定</h3>
+                        <p class="settings-desc" style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 12px; line-height:1.4;">Supabaseを接続し、複数端末で同時にリアルタイムスコア同期が可能です。</p>
+                        <div class="input-group">
+                            <label for="input-supabase-url" class="input-label">Supabase URL</label>
+                            <input type="text" id="input-supabase-url" class="text-input" placeholder="https://xxxx.supabase.co">
+                        </div>
+                        <div class="input-group">
+                            <label for="input-supabase-key" class="input-label">Anon API API Key</label>
+                            <input type="password" id="input-supabase-key" class="text-input" placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...">
+                        </div>
+                        <button class="solid-btn" onclick="app.saveSupabaseSettings()">クラウド同期設定を保存</button>
                     </div>
 
                     <!-- Players & Even Value (Handicap) Settings -->
@@ -302,6 +329,7 @@
                             <button class="outline-btn" onclick="app.exportData()">JSONでデータをエクスポート</button>
                             <button class="outline-btn" onclick="document.getElementById('import-file-input').click()">データをインポート</button>
                             <input type="file" id="import-file-input" class="hidden" accept=".json" onchange="app.importData(event)">
+                            <button class="danger-btn" style="background: transparent; border: 1px solid var(--accent-red); color: var(--accent-red);" onclick="app.resetScoresOnly()">スコアのみをリセット</button>
                             <button class="danger-btn" onclick="app.resetAllData()">全データをリセット</button>
                         </div>
                     </div>
@@ -333,6 +361,7 @@
     <!-- Alert / Toast Notifications -->
     <div id="toast-container" class="toast-container"></div>
 
-    <script src="app-v2.js?v=1.0.23"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="app-v2.js?v=1.0.24"></script>
 </body>
 </html>

@@ -23,11 +23,16 @@ class GolfApp {
                 2: { day1: Array(18).fill(null), day2: Array(18).fill(null) },
                 3: { day1: Array(18).fill(null), day2: Array(18).fill(null) },
                 4: { day1: Array(18).fill(null), day2: Array(18).fill(null) }
-            }
+            },
+            supabaseUrl: "",
+            supabaseKey: "",
+            last_updated: Date.now()
         };
 
         this.state = null;
         this.isInitialLoad = true;
+        this.supabase = null;
+        this.syncIntervalId = null;
         
         // Active UI States
         this.currentTab = 'home';
@@ -55,6 +60,7 @@ class GolfApp {
     init() {
         // Load state
         this.loadState();
+        this.initSupabase();
         
         // Render initial view & tournament info
         this.renderAll();
@@ -287,6 +293,20 @@ class GolfApp {
                     migrated = true;
                 }
 
+                // Migrate to Supabase properties
+                if (this.state.supabaseUrl === undefined) {
+                    this.state.supabaseUrl = "";
+                    migrated = true;
+                }
+                if (this.state.supabaseKey === undefined) {
+                    this.state.supabaseKey = "";
+                    migrated = true;
+                }
+                if (this.state.last_updated === undefined) {
+                    this.state.last_updated = Date.now();
+                    migrated = true;
+                }
+
                 if (migrated) {
                     this.saveState();
                 }
@@ -302,11 +322,125 @@ class GolfApp {
 
     saveState() {
         try {
+            this.state.last_updated = Date.now();
             localStorage.setItem(this.STORAGE_KEY, JSON.stringify(this.state));
+            this.uploadStateToCloud();
         } catch (e) {
             console.error("Failed to save state", e);
             this.showToast("データの保存に失敗しました", true);
         }
+    }
+
+    async uploadStateToCloud() {
+        if (!this.supabase) return;
+        try {
+            const { error } = await this.supabase
+                .from('golf_tournament_state')
+                .upsert({ 
+                    id: 'default', 
+                    state: this.state,
+                    updated_at: new Date().toISOString()
+                });
+            if (error) {
+                console.error("Supabase upsert error:", error);
+            }
+        } catch (e) {
+            console.error("Failed to upload state to cloud", e);
+        }
+    }
+
+    initSupabase() {
+        if (this.state.supabaseUrl && this.state.supabaseKey) {
+            try {
+                if (window.supabase) {
+                    this.supabase = window.supabase.createClient(this.state.supabaseUrl, this.state.supabaseKey);
+                    console.log("Supabase client initialized successfully.");
+                    this.startCloudSyncInterval();
+                } else {
+                    console.error("Supabase SDK is not loaded.");
+                }
+            } catch (e) {
+                console.error("Failed to initialize Supabase client", e);
+            }
+        } else {
+            console.log("Supabase configuration is missing. Sync disabled.");
+            if (this.syncIntervalId) {
+                clearInterval(this.syncIntervalId);
+                this.syncIntervalId = null;
+            }
+            this.supabase = null;
+        }
+    }
+
+    async syncWithCloud(isAuto = false) {
+        if (!this.supabase) {
+            if (!isAuto) this.showToast("クラウド同期（Supabase）が設定されていません", true);
+            return;
+        }
+
+        try {
+            // Visual feedback: rotate reload icons during sync
+            const reloadBtns = document.querySelectorAll('.header-reload-btn');
+            reloadBtns.forEach(btn => btn.classList.add('syncing'));
+
+            const { data, error } = await this.supabase
+                .from('golf_tournament_state')
+                .select('state')
+                .eq('id', 'default')
+                .single();
+
+            // Delay removing class briefly for smooth animation
+            setTimeout(() => {
+                reloadBtns.forEach(btn => btn.classList.remove('syncing'));
+            }, 500);
+
+            if (error) {
+                if (error.code === 'PGRST116') {
+                    console.log("No cloud state found. Uploading current state as default...");
+                    this.uploadStateToCloud();
+                    if (!isAuto) this.showToast("クラウドにデータが存在しないため、現在のデータをアップロードしました");
+                } else {
+                    console.error("Supabase select error:", error);
+                    if (!isAuto) this.showToast("同期エラーが発生しました", true);
+                }
+                return;
+            }
+
+            if (data && data.state) {
+                const cloudState = data.state;
+                
+                const cloudTime = cloudState.last_updated || 0;
+                const localTime = this.state.last_updated || 0;
+
+                if (cloudTime > localTime) {
+                    this.state = cloudState;
+                    localStorage.setItem(this.STORAGE_KEY, JSON.stringify(this.state));
+                    this.renderAll();
+                    this.initSettingsInputs();
+                    if (isAuto) {
+                        this.showToast("他端末でのスコア更新を同期しました");
+                    } else {
+                        this.showToast("クラウドからデータを同期しました");
+                    }
+                } else {
+                    if (!isAuto) this.showToast("データはすでに最新です");
+                }
+            }
+        } catch (e) {
+            console.error("Failed to sync with cloud", e);
+            if (!isAuto) this.showToast("同期処理に失敗しました", true);
+        }
+    }
+
+    startCloudSyncInterval() {
+        if (this.syncIntervalId) {
+            clearInterval(this.syncIntervalId);
+        }
+        
+        // Poll every 8 seconds for background synchronization
+        this.syncIntervalId = setInterval(() => {
+            this.syncWithCloud(true);
+        }, 8000);
     }
 
     resetAllData() {
@@ -315,6 +449,20 @@ class GolfApp {
             this.saveState();
             this.showToast("データをリセットしました");
             this.initSettingsInputs();
+            this.renderAll();
+        }
+    }
+
+    resetScoresOnly() {
+        if (confirm("選手設定やPar設定は残し、入力されたスコアのみをすべて削除（リセット）します。よろしいですか？")) {
+            this.state.scores = {
+                1: { day1: Array(18).fill(null), day2: Array(18).fill(null) },
+                2: { day1: Array(18).fill(null), day2: Array(18).fill(null) },
+                3: { day1: Array(18).fill(null), day2: Array(18).fill(null) },
+                4: { day1: Array(18).fill(null), day2: Array(18).fill(null) }
+            };
+            this.saveState();
+            this.showToast("スコアのみリセットしました");
             this.renderAll();
         }
     }
@@ -1182,6 +1330,12 @@ class GolfApp {
         document.getElementById('input-tournament-name').value = this.state.tournament.name;
         document.getElementById('input-tournament-date').value = this.state.tournament.date;
         
+        // Populating Supabase URL and Key inputs
+        const urlInput = document.getElementById('input-supabase-url');
+        const keyInput = document.getElementById('input-supabase-key');
+        if (urlInput) urlInput.value = this.state.supabaseUrl || "";
+        if (keyInput) keyInput.value = this.state.supabaseKey || "";
+        
         // Players Config List
         const playerList = document.getElementById('players-settings-list');
         playerList.innerHTML = '';
@@ -1235,6 +1389,22 @@ class GolfApp {
 
     renderSettings() {
         // Settings elements are pre-rendered and saved dynamically on button click.
+    }
+
+    async saveSupabaseSettings() {
+        const url = document.getElementById('input-supabase-url').value.trim();
+        const key = document.getElementById('input-supabase-key').value.trim();
+        
+        this.state.supabaseUrl = url;
+        this.state.supabaseKey = key;
+        this.saveState();
+        
+        this.showToast("クラウド同期設定を保存しました。再接続します...");
+        this.initSupabase();
+        
+        if (this.supabase) {
+            await this.syncWithCloud();
+        }
     }
 
     saveTournamentInfo() {
