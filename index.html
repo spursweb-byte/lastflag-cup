@@ -8,7 +8,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700;900&family=Outfit:wght@400;600;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="style-v2.css?v=1.0.26">
+    <link rel="stylesheet" href="style-v2.css?v=1.0.27">
 </head>
 <body>
     <!-- App Container -->
@@ -148,6 +148,25 @@
                         <div class="regulation-table" id="regulation-players-list">
                             <!-- JS dynamically generates player names and handicap list here -->
                         </div>
+                    </div>
+
+                    <!-- Rule Card 3.5: Local Rules -->
+                    <div class="glass-card regulation-card">
+                        <h3 class="card-section-title">🚨 大会ローカルルール</h3>
+                        <ul class="local-rules-list">
+                            <li class="local-rule-item">・ティーショットは白杭からスタート</li>
+                            <li class="local-rule-item">・ティーショットがOBの場合は、前進3打（プレ3）として扱う。<br><span class="rule-note">※プレ４（プレ３）地点がない場合には、130yd地点から3打目として打ち始める。</span></li>
+                            <li class="local-rule-item">・2打目以降の、OBやロストボール（池ポチャ等）はボールがホールから切れた地点から、1ペナとして扱う。</li>
+                            <li class="local-rule-item">・ファストプレーを優先し、グリーン周辺や自力でのホールアウトができなかった場合には、その時点のスコアに追加で「＋2打」をする。OKパットの場合は「＋1打」とする。また、同様にグリーン内でボールを止めてもらう（外的要因にてボールをグリーンに残した場合）はその時点で「＋1打」とし、止めてもらった回数分ホールアウト後のスコアに足さなければならない。</li>
+                            <li class="local-rule-item">・ほかのプレイヤーのボールが自分のボールに当たって場所が変わってしまった場合は、変わった地点から競技を再開するものとする。</li>
+                            <li class="local-rule-item">・ホール中、グリーン以外で自分のボールに触った場合は、「＋2打」とする。</li>
+                            <li class="local-rule-item">・ティーショットを含む、故意ではないクラブとボールの接触については無罰とし、空振りも同様とする。<br><span class="rule-note">但し、空振りによってボールに直接触れていない場合でも周辺の芝や地面にクラブが接触して, ボールが動いてしまった場合には、打数にカウントをしなければならない。</span></li>
+                            <li class="local-rule-item">・喫煙、飲食等により自分の番の打ちはじめがスムーズにいかない事象が発生した場合には1回目「イエローカード」とし2回目は「レッドカード」となり、そのホールはティーショット地点から「＋3打」をした状態で始めなければならない。カードの判断基準は、自分を除く2名以上からの指摘でカードが出るものとする。<br><span class="rule-note">但し、当該プレイヤーが他のプレイヤーに相談し、承諾を得て順番を変更し進行を妨げない場合には上記に該当をしないものとする。</span></li>
+                            <li class="local-rule-item">・スコアボードは、本アプリ内スコアを正とし、カートにあるスコアボードは参考記録として扱う。</li>
+                            <li class="local-rule-item">・スコアの入力は原則各自行うものとするが、アプリ不具合等により各自でできない場合は、アプリ作成者がまとめて入力するものとする。</li>
+                            <li class="local-rule-item">・スクラッチカードの紛失は自己責任とし、ホール内で使用したい場合は、該当するスクラッチカードを打ち始める前もしくはうち終わり後すぐに、カード発行元へ提出をしなければならない。提出がない場合には、「＋3打」として扱うものとする。</li>
+                            <li class="local-rule-item">・独自イーブンの見直しは、1日目終了後の夜に実施し、均衡がとれる状態にする。</li>
+                        </ul>
                     </div>
 
                     <!-- Rule Card 4: Course Info -->
@@ -362,6 +381,6 @@
     <div id="toast-container" class="toast-container"></div>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="app-v2.js?v=1.0.26"></script>
+    <script src="app-v2.js?v=1.0.27"></script>
 </body>
 </html>
